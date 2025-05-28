@@ -105,7 +105,6 @@ const IllustrationImagesList = () => {
       setIllustrations(updatedIllustrations);
       setFilteredIllustrations(updatedIllustrations);
       setTotalPages(Math.ceil(updatedIllustrations.length / itemsPerPage));
-      // NotificationManager.success("Illustration deleted successfully", "Success");
     }
   };
 
@@ -123,7 +122,6 @@ const IllustrationImagesList = () => {
         filteredIllustrations,
         field
       );
-      // NotificationManager.success("Illustration status updated successfully", "Success");
     } catch (error) {
       console.error("Error toggling illustration status:", error);
       NotificationManager.removeAll();
@@ -152,17 +150,14 @@ const IllustrationImagesList = () => {
   );
 
   const renderStatus = (status, id) => {
-    let statusLabel = status === 1 ? "Published" : status === 2 ? "Scheduled" : "Unpublished";
-    const isScheduled = status === 2;
-    const isToggleEnabled = !isScheduled;
-
+    const statusLabel = status === 1 ? "Published" : "Unpublished";
     return (
       <div className="flex items-center">
         <FontAwesomeIcon
-          className={`h-7 w-16 ${isToggleEnabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+          className="h-7 w-16 cursor-pointer"
           style={{ color: status === 1 ? "#0064DC" : "#e9ecef" }}
           icon={status === 1 ? faToggleOn : faToggleOff}
-          onClick={isToggleEnabled ? () => handleToggleChange(id, status, "status") : null}
+          onClick={() => handleToggleChange(id, status, "status")}
         />
         <span className="ml-2 text-sm">{statusLabel}</span>
       </div>
@@ -171,7 +166,7 @@ const IllustrationImagesList = () => {
 
   const renderTime = (time) => {
     if (!time) return "N/A";
-    return new Date(time).toLocaleString();
+    return new Date(time).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   };
 
   const columns = ["S.No.", "Illustration Image", "Screen Name", "Start Time", "End Time", "Status"];

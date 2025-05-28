@@ -102,7 +102,7 @@ const AdsList = () => {
       setAds(updatedAds);
       setFilteredAds(updatedAds);
       setTotalPages(Math.ceil(updatedAds.length / itemsPerPage));
-      NotificationManager.success("Ad deleted successfully", "Success");
+      // NotificationManager.success("Ad deleted successfully", "Success");
     }
   };
 
@@ -114,6 +114,7 @@ const AdsList = () => {
     const now = new Date();
     const startDate = startDateTime ? new Date(startDateTime) : null;
     if (startDate && startDate > now) {
+      NotificationManager.removeAll()
       NotificationManager.error(
         "Cannot toggle status for an ad with a future start date. It will be published automatically when the start time is reached.",
         "Error"
@@ -129,9 +130,10 @@ const AdsList = () => {
         filteredAds,
         field
       );
-      NotificationManager.success("Ad status updated successfully", "Success");
+      // NotificationManager.success("Ad status updated successfully", "Success");
     } catch (error) {
       console.error("Error toggling ad status:", error);
+      NotificationManager.removeAll()
       NotificationManager.error(error.response?.data?.ResponseMsg || "Error updating ad status", "Error");
     }
   };
