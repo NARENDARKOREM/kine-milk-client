@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
-import Header from "../../common/Header";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import {
-  NotificationManager,
-  NotificationContainer,
-} from "react-notifications";
+import { NotificationContainer, NotificationManager } from "react-notifications";
 import "react-notifications/lib/notifications.css";
 import api from "../../utils/api";
 import Select from "react-select";
 import { AiOutlineDown } from "react-icons/ai";
+import Header from "../../common/Header";
 import SimpleHeader from "../../common/SimpleHeader";
 
 const CouponAdd = () => {
@@ -41,56 +38,104 @@ const CouponAdd = () => {
     coupon_img_preview: "",
   });
 
+  const statusOptions = [
+    { value: "1", label: "Published" },
+    { value: "0", label: "Unpublished" },
+  ];
+
+  const customStyles = {
+    control: (base, { isFocused }) => ({
+      ...base,
+      border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
+      boxShadow: "none",
+      borderRadius: "5px",
+      padding: "0px",
+      fontSize: "12px",
+      height: "42px",
+      transition: "border-color 0.2s ease-in-out",
+      "&:hover": {
+        border: "2px solid #393185",
+      },
+    }),
+    option: (base, { isFocused, isSelected }) => ({
+      ...base,
+      backgroundColor: isFocused ? "#393185" : isSelected ? "#393185" : "white",
+      color: isFocused || isSelected ? "white" : "#757575",
+      fontSize: "12px",
+    }),
+    singleValue: (base) => ({
+      ...base,
+      fontSize: "12px",
+      fontWeight: "600",
+      color: "#393185",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#393185",
+      fontSize: "12px",
+    }),
+  };
+
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n) => n.toString().padStart(2, "0");
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     if (id) {
-      getCoupon(id);
-    }
-  }, [id]);
+      const fetchCoupon = async () => {
+        try {
+          const response = await api.get(`/coupon/getbyid/${id}`);
+          const coupon = response.data;
 
-  const getCoupon = async (id) => {
-    try {
-      const response = await api.get(`/coupon/getbyid/${id}`);
-      const coupon = response.data;
+          let imageUrl = coupon.coupon_img;
+          if (imageUrl) {
+            imageUrl = imageUrl.replace(/^"|"$/g, "");
+          }
 
-      let imageUrl = coupon.coupon_img;
-      if (imageUrl) {
-        imageUrl = imageUrl.replace(/^"|"$/g, "");
-      }
+          const startDate = coupon.start_date ? formatDateForInput(coupon.start_date) : "";
+          const endDate = coupon.end_date ? formatDateForInput(coupon.end_date) : "";
 
-      const formatDateTime = (dateString) => {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        if (isNaN(date)) return "";
-        return date.toISOString().slice(0, 16);
+          setFormData({
+            id,
+            coupon_img: null,
+            coupon_img_preview: imageUrl,
+            status: coupon.status.toString(),
+            coupon_title: coupon.coupon_title || "",
+            start_date: startDate,
+            end_date: endDate,
+            subtitle: coupon.subtitle || "",
+            min_amt: coupon.min_amt || "",
+            coupon_val: coupon.coupon_val || "",
+            description: coupon.description || "",
+            coupon_code: coupon.coupon_code || "",
+          });
+
+          setValue("status", coupon.status.toString());
+          setValue("coupon_title", coupon.coupon_title || "");
+          setValue("start_date", startDate);
+          setValue("end_date", endDate);
+          setValue("subtitle", coupon.subtitle || "");
+          setValue("min_amt", coupon.min_amt || "");
+          setValue("coupon_val", coupon.coupon_val || "");
+          setValue("description", coupon.description || "");
+          setValue("coupon_code", coupon.coupon_code || "");
+        } catch (error) {
+          console.error("Error fetching coupon:", error);
+          NotificationManager.error("Failed to load coupon details.", "Error");
+        }
       };
-
-      const formattedStartDate = formatDateTime(coupon.start_date);
-      const formattedEndDate = formatDateTime(coupon.end_date);
-
-      setFormData({
-        id,
-        coupon_img: null,
-        coupon_img_preview: imageUrl,
-        start_date: formattedStartDate,
-        end_date: formattedEndDate,
-        description: coupon.description,
-        coupon_title: coupon.coupon_title,
-        subtitle: coupon.subtitle,
-        min_amt: coupon.min_amt,
-        coupon_val: coupon.coupon_val,
-        status: coupon.status.toString(),
-        coupon_code: coupon.coupon_code,
-      });
-
-      Object.keys(coupon).forEach((key) => {
-        setValue(key, coupon[key]);
-      });
-      setValue("start_date", formattedStartDate);
-      setValue("end_date", formattedEndDate);
-    } catch (error) {
-      console.error("Error fetching coupon:", error);
+      fetchCoupon();
     }
-  };
+  }, [id, setValue]);
 
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
@@ -132,12 +177,8 @@ const CouponAdd = () => {
     setFormData((prevData) => ({
       ...prevData,
       status: newStatus,
-      start_date: newStatus === "1" ? "" : prevData.start_date,
-      end_date: newStatus === "0" ? "" : prevData.end_date, // Clear end_date for Unpublished
     }));
     setValue("status", newStatus, { shouldValidate: true });
-    setValue("start_date", newStatus === "1" ? "" : formData.start_date);
-    setValue("end_date", newStatus === "0" ? "" : formData.end_date);
   };
 
   const makeEightDigitRand = () => {
@@ -163,43 +204,22 @@ const CouponAdd = () => {
         return;
       }
 
-      const currentTime = new Date();
-
-      // Validate dates based on status
-      if (formData.status === "2") {
-        // Scheduled: start_date and end_date are mandatory
-        if (!data.start_date) {
-          NotificationManager.error("Start date is required for Scheduled status.");
-          return;
-        }
-        if (!data.end_date) {
-          NotificationManager.error("End date is required for Scheduled status.");
-          return;
-        }
-        const startDate = new Date(data.start_date);
+      const now = new Date();
+      if (data.end_date) {
         const endDate = new Date(data.end_date);
-
-        if (startDate <= currentTime) {
-          NotificationManager.error("Start date must be in the future for Scheduled status.");
-          return;
-        }
-        if (endDate <= currentTime) {
-          NotificationManager.error("End date must be in the future for Scheduled status.");
-          return;
-        }
-        if (endDate <= startDate) {
-          NotificationManager.error("End date must be greater than start date for Scheduled status.");
-          return;
-        }
-      } else if (formData.status === "1" && data.end_date) {
-        // Published: end_date is optional, but must be in the future if provided
-        const endDate = new Date(data.end_date);
-        if (endDate <= currentTime) {
-          NotificationManager.error("End date must be in the future for Published status.");
+        if (endDate <= now) {
+          NotificationManager.error("End date/time must be in the future.", "Error");
           return;
         }
       }
-      // Unpublished (status === "0"): start_date and end_date are optional
+      if (data.start_date && data.end_date) {
+        const startDate = new Date(data.start_date);
+        const endDate = new Date(data.end_date);
+        if (startDate >= endDate) {
+          NotificationManager.error("End date/time must be after start date/time.", "Error");
+          return;
+        }
+      }
 
       const form = new FormData();
       form.append("coupon_title", data.coupon_title);
@@ -211,7 +231,6 @@ const CouponAdd = () => {
       form.append("min_amt", data.min_amt);
       form.append("coupon_val", data.coupon_val);
       form.append("coupon_code", formData.coupon_code);
-
       if (formData.coupon_img && formData.coupon_img instanceof File) {
         form.append("coupon_img", formData.coupon_img);
       }
@@ -220,20 +239,18 @@ const CouponAdd = () => {
       }
 
       await api.post("/coupon/upsert", form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
       NotificationManager.removeAll();
       NotificationManager.success(
-        id ? "Coupon updated successfully!" : "Coupon added successfully!"
+        id ? "Coupon updated successfully!" : "Coupon added successfully!",
+        "Success"
       );
 
       setTimeout(() => {
         navigate("/admin/coupon-list");
       }, 2000);
     } catch (error) {
-      console.error("Error submitting form:", error);
       NotificationManager.removeAll();
       const errorMsg = error.response?.data?.ResponseMsg;
       if (
@@ -251,11 +268,11 @@ const CouponAdd = () => {
         }));
       } else if (
         error.response?.status === 400 &&
-        errorMsg.includes("End date must be greater than start date for Scheduled status")
+        errorMsg.includes("End date/time must be after start date/time")
       ) {
         setError("end_date", {
           type: "manual",
-          message: "End date must be greater than start date for Scheduled status",
+          message: "End date/time must be after start date/time",
         });
       } else if (
         error.response?.status === 400 &&
@@ -267,46 +284,12 @@ const CouponAdd = () => {
         });
       } else {
         NotificationManager.error(
-          id ? "Failed to update Coupon." : "Failed to add Coupon."
+          id ? "Failed to update Coupon." : "Failed to add Coupon.",
+          "Error"
         );
       }
     }
   };
-
-  const customStyles = {
-    control: (base, { isFocused }) => ({
-      ...base,
-      border: `${isFocused ? "2px solid #393185" : "1px solid #B0B0B0"}`,
-      boxShadow: isFocused ? "none" : "none",
-      borderRadius: "5px",
-      padding: "0px",
-      fontSize: "12px",
-      height: "42px",
-      transition: "border-color 0.2s ease-in-out",
-      "&:hover": {
-        border: "2px solid #393185",
-      },
-    }),
-    option: (base, { isFocused, isSelected }) => ({
-      ...base,
-      backgroundColor: isFocused ? "#393185" : isSelected ? "#393185" : "white",
-      color: isFocused || isSelected ? "white" : "#757575",
-      fontSize: "12px",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      fontSize: "12px",
-      fontWeight: "600",
-      color: "#393185",
-    }),
-    placeholder: (base) => ({ ...base, color: "#393185", fontSize: "12px" }),
-  };
-
-  const statusOptions = [
-    { value: "1", label: "Published" },
-    { value: "0", label: "Unpublished" },
-    { value: "2", label: "Scheduled" },
-  ];
 
   return (
     <div className="bg-[#f7fbff] h-full">
@@ -420,49 +403,43 @@ const CouponAdd = () => {
                       )}
                     </div>
 
-                    {formData.status !== "1" && (
-                      <div className="flex flex-col">
-                        <label className="text-sm text-left font-medium">
-                          Start Date & Time
-                        </label>
-                        <input
-                          type="datetime-local"
-                          {...register("start_date", {
-                            required: formData.status === "2" ? "Start date is required for Scheduled status" : false,
-                          })}
-                          value={formData.start_date}
-                          onChange={handleChange}
-                          className="border p-3 w-full h-12 rounded-lg"
-                        />
-                        {errors.start_date && (
-                          <p className="text-red-500 text-sm">
-                            {errors.start_date.message}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex flex-col">
+                      <label className="text-sm text-left font-medium">
+                        Start Date & Time (Optional)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        {...register("start_date")}
+                        value={formData.start_date}
+                        onChange={handleChange}
+                        className="border p-3 w-full h-12 rounded-lg"
+                        min={new Date().toISOString().slice(0, 16)}
+                      />
+                      {errors.start_date && (
+                        <p className="text-red-500 text-sm">
+                          {errors.start_date.message}
+                        </p>
+                      )}
+                    </div>
 
-                    {(formData.status === "1" || formData.status === "2") && (
-                      <div className="flex flex-col">
-                        <label className="text-sm text-left font-medium">
-                          End Date & Time
-                        </label>
-                        <input
-                          type="datetime-local"
-                          {...register("end_date", {
-                            required: formData.status === "2" ? "End date is required for Scheduled status" : false,
-                          })}
-                          value={formData.end_date}
-                          onChange={handleChange}
-                          className="border p-3 w-full h-12 rounded-lg"
-                        />
-                        {errors.end_date && (
-                          <p className="text-red-500 text-sm">
-                            {errors.end_date.message}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex flex-col">
+                      <label className="text-sm text-left font-medium">
+                        End Date & Time (Optional)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        {...register("end_date")}
+                        value={formData.end_date}
+                        onChange={handleChange}
+                        className="border p-3 w-full h-12 rounded-lg"
+                        min={formData.start_date || new Date().toISOString().slice(0, 16)}
+                      />
+                      {errors.end_date && (
+                        <p className="text-red-500 text-sm">
+                          {errors.end_date.message}
+                        </p>
+                      )}
+                    </div>
 
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">

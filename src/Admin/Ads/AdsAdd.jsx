@@ -264,7 +264,7 @@ const AdsAdd = () => {
       <Header />
       <SimpleHeader name={"Ads Management"} />
       <div className="container px-6">
-        <div className="bg-white max-h-max w-[76vw] rounded-xl border border-[#EAE5FF] py-4 px-6">
+        <div className="bg-white max-h-[70vh] w-[76vw] overflow-scroll rounded-xl border border-[#EAE5FF] py-4 px-6">
           <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg">
             <div className="flex flex-col w-full gap-y-4">
               <div className="flex flex-col w-full">

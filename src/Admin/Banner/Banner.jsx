@@ -35,7 +35,9 @@ const Banner = () => {
       setIsLoading(true);
       setShowLoader(true);
       try {
-        const response = await api.get("/banner/fetch-banners", { withCredentials: true });
+        const response = await api.get("/banner/fetch-banners", {
+          withCredentials: true,
+        });
         setBanners(response.data);
         setFilteredBanners(response.data);
         setTotalPages(Math.ceil(response.data.length / itemsPerPage));
@@ -95,14 +97,12 @@ const Banner = () => {
   };
 
   const handleDelete = async (id) => {
-    NotificationManager.removeAll();
     const success = await DeleteEntity("Banner", id);
     if (success) {
       const updatedBanners = banners.filter((banner) => banner.id !== id);
       setBanners(updatedBanners);
       setFilteredBanners(updatedBanners);
       setTotalPages(Math.ceil(updatedBanners.length / itemsPerPage));
-      NotificationManager.success("Banner deleted successfully", "Success");
     }
   };
 
@@ -111,13 +111,19 @@ const Banner = () => {
   };
 
   const handleToggleChange = async (id, currentStatus, field) => {
-    NotificationManager.removeAll();
     try {
-      await StatusEntity("Banner", id, currentStatus, setFilteredBanners, filteredBanners, field);
-      NotificationManager.success("Banner status updated successfully", "Success");
+      await StatusEntity(
+        "Banner",
+        id,
+        currentStatus,
+        setFilteredBanners,
+        filteredBanners,
+        field
+      );
     } catch (error) {
       console.error("Error toggling banner status:", error);
-      NotificationManager.error(error.response?.data?.ResponseMsg || "Error updating banner status", "Error");
+      NotificationManager.removeAll();
+      NotificationManager.error("Error updating banner status", "Error");
     }
   };
 
@@ -142,17 +148,14 @@ const Banner = () => {
   );
 
   const renderStatus = (status, id) => {
-    let statusLabel = status === 1 ? "Published" : status === 2 ? "Scheduled" : "Unpublished";
-    const isScheduled = status === 2;
-    const isToggleEnabled = !isScheduled;
-
+    const statusLabel = status === 1 ? "Published" : "Unpublished";
     return (
       <div className="flex items-center">
         <FontAwesomeIcon
-          className={`h-7 w-16 ${isToggleEnabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+          className="h-7 w-16 cursor-pointer"
           style={{ color: status === 1 ? "#0064DC" : "#e9ecef" }}
           icon={status === 1 ? faToggleOn : faToggleOff}
-          onClick={isToggleEnabled ? () => handleToggleChange(id, status, "status") : null}
+          onClick={() => handleToggleChange(id, status, "status")}
         />
         <span className="ml-2 text-sm">{statusLabel}</span>
       </div>
@@ -161,9 +164,7 @@ const Banner = () => {
 
   const renderTime = (time) => {
     if (!time) return "N/A";
-    // Backend returns IST time, format it directly
-    const date = new Date(time);
-    return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+    return new Date(time).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   };
 
   const columns = ["S.No.", "Banner Image", "Plan Type", "Start Time", "End Time", "Status"];
@@ -176,7 +177,9 @@ const Banner = () => {
       id: banner.id,
       index: (page - 1) * itemsPerPage + index + 1,
       image: renderImage(banner.img),
-      planType: banner.planType.charAt(0).toUpperCase() + banner.planType.slice(1),
+      planType: banner.planType
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()),
       startTime: renderTime(banner.startTime),
       endTime: renderTime(banner.endTime),
       status: renderStatus(banner.status, banner.id),

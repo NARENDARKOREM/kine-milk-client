@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../common/Header";
 import SimpleHeader from "../../common/SimpleHeader";
 import { NotificationContainer, NotificationManager } from "react-notifications";
@@ -41,14 +41,13 @@ const IllustrationImageAdd = () => {
   const statusOptions = [
     { value: "1", label: "Published" },
     { value: "0", label: "Unpublished" },
-    { value: "2", label: "Scheduled" },
   ];
 
   const customStyles = {
     control: (base, { isFocused }) => ({
       ...base,
-      border: `${isFocused ? "2px solid #393185" : "1px solid #B0B0B0"}`,
-      boxShadow: isFocused ? "none" : "none",
+      border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
+      boxShadow: "none",
       borderRadius: "5px",
       padding: "0px",
       fontSize: "12px",
@@ -79,7 +78,11 @@ const IllustrationImageAdd = () => {
       fontWeight: "600",
       color: "#393185",
     }),
-    placeholder: (base) => ({ ...base, color: "#393185", fontSize: "12px" }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#393185",
+      fontSize: "12px",
+    }),
   };
 
   const handleImageUpload = (e) => {
@@ -96,19 +99,12 @@ const IllustrationImageAdd = () => {
       }
       clearErrors("img");
       const imgURL = URL.createObjectURL(file);
-      setFormData({ ...formData, img: imgURL });
+      setFormData({ ...formData, img: imgURL, file });
     }
   };
 
   const handleSelectChange = (field, selectedOption) => {
     const newFormData = { ...formData, [field]: selectedOption.value };
-    if (field === "status" && selectedOption.value === "0") {
-      newFormData.startTime = "";
-      newFormData.endTime = "";
-      setValue("startTime", "");
-      setValue("endTime", "");
-      clearErrors(["startTime", "endTime"]);
-    }
     setFormData(newFormData);
     setValue(field, selectedOption.value);
   };
@@ -118,62 +114,52 @@ const IllustrationImageAdd = () => {
     setValue(field, value);
   };
 
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const pad = (n) => n.toString().padStart(2, "0");
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     NotificationManager.removeAll();
     try {
       if (!formData.screenName) {
-        NotificationManager.error("Screen name is required.");
+        NotificationManager.error("Screen name is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!formData.status) {
-        NotificationManager.error("Status is required.");
+        NotificationManager.error("Status is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!id && !data.img) {
-        NotificationManager.error("Illustration image is required for a new illustration.");
+        NotificationManager.error("Illustration image is required for a new illustration.", "Error");
         setIsSubmitting(false);
         return;
       }
 
-      const currentTime = new Date();
-
-      if (formData.status === "2") {
-        if (!formData.startTime) {
-          NotificationManager.error("Start time is required for Scheduled status.");
-          setIsSubmitting(false);
-          return;
-        }
-        const startDate = new Date(formData.startTime);
-        if (startDate <= currentTime) {
-          NotificationManager.error("Start time must be in the future for Scheduled status.");
-          setIsSubmitting(false);
-          return;
-        }
-        if (!formData.endTime) {
-          NotificationManager.error("End time is required for Scheduled status.");
-          setIsSubmitting(false);
-          return;
-        }
+      const now = new Date();
+      if (formData.endTime) {
         const endDate = new Date(formData.endTime);
-        if (endDate <= startDate) {
-          NotificationManager.error("End time must be greater than start time for Scheduled status.");
-          setIsSubmitting(false);
-          return;
-        }
-        if (endDate <= currentTime) {
-          NotificationManager.error("End time must be in the future for Scheduled status.");
+        if (endDate <= now) {
+          NotificationManager.error("End date/time must be in the future.", "Error");
           setIsSubmitting(false);
           return;
         }
       }
-
-      if (formData.status === "1" && formData.endTime) {
+      if (formData.startTime && formData.endTime) {
+        const startDate = new Date(formData.startTime);
         const endDate = new Date(formData.endTime);
-        if (endDate <= currentTime) {
-          NotificationManager.error("End time must be in the future if provided for Published status.");
+        if (startDate >= endDate) {
+          NotificationManager.error("End date/time must be after start date/time.", "Error");
           setIsSubmitting(false);
           return;
         }
@@ -182,10 +168,10 @@ const IllustrationImageAdd = () => {
       const form = new FormData();
       form.append("screenName", formData.screenName);
       form.append("status", formData.status);
-      if (formData.status === "2") {
+      if (formData.startTime) {
         form.append("startTime", formData.startTime);
       }
-      if ((formData.status === "1" && formData.endTime) || formData.status === "2") {
+      if (formData.endTime) {
         form.append("endTime", formData.endTime);
       }
       if (data.img && data.img[0]) {
@@ -201,14 +187,15 @@ const IllustrationImageAdd = () => {
       });
 
       NotificationManager.success(
-        id ? "Illustration updated successfully." : "Illustration added successfully."
+        id ? "Illustration updated successfully." : "Illustration added successfully.",
+        "Success"
       );
       setTimeout(() => navigate("/admin/list-illustration"), 2000);
     } catch (error) {
       const errorMsg =
         error.response?.data?.ResponseMsg ||
         (id ? "Failed to update Illustration" : "Failed to add Illustration");
-      NotificationManager.error(errorMsg);
+      NotificationManager.error(errorMsg, "Error");
     } finally {
       setIsSubmitting(false);
     }
@@ -221,10 +208,10 @@ const IllustrationImageAdd = () => {
           const response = await api.get(`/illustration/getillustrationbyid/${id}`);
           if (response.data) {
             const startTime = response.data.startTime
-              ? new Date(response.data.startTime).toISOString().slice(0, 16)
+              ? formatDateForInput(response.data.startTime)
               : "";
             const endTime = response.data.endTime
-              ? new Date(response.data.endTime).toISOString().slice(0, 16)
+              ? formatDateForInput(response.data.endTime)
               : "";
             setFormData({
               screenName: response.data.screenName,
@@ -240,7 +227,7 @@ const IllustrationImageAdd = () => {
           }
         } catch (error) {
           NotificationManager.removeAll();
-          NotificationManager.error("Failed to load illustration details.");
+          NotificationManager.error("Failed to load illustration details.", "Error");
         }
       };
       fetchData();
@@ -252,7 +239,7 @@ const IllustrationImageAdd = () => {
       <Header />
       <SimpleHeader name={"Illustration Image Management"} />
       <div className="container px-6">
-        <div className="bg-white max-h-max w-[76vw] rounded-xl border border-[#EAE5FF] py-4 px-6 overflow-y-auto scrollbar-none">
+        <div className="bg-white max-h-[70vh] w-[76vw] overflow-scroll rounded-xl border border-[#EAE5FF] py-4 px-6">
           <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg">
             <div className="flex flex-col w-full gap-y-4">
               <div className="flex flex-col w-full">
@@ -268,6 +255,7 @@ const IllustrationImageAdd = () => {
                   onChange={handleImageUpload}
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
                   className="w-full border border-gray-300 rounded p-2"
+                  disabled={isSubmitting}
                 />
                 {formData.img && (
                   <img
@@ -283,7 +271,7 @@ const IllustrationImageAdd = () => {
 
               <div className="flex flex-row gap-x-4">
                 <div className="flex flex-col w-1/2">
-                  <label className="block text-left text-sm font-medium mb-1">
+                  <label className="block text-left text-sm font-medium mb-0">
                     Screen Name
                   </label>
                   <Select
@@ -293,9 +281,6 @@ const IllustrationImageAdd = () => {
                     onChange={(option) => handleSelectChange("screenName", option)}
                     options={screenNameOptions}
                     styles={customStyles}
-                    menuPortalTarget={document.body}
-                    menuPosition="absolute"
-                    menuShouldScrollIntoView={false}
                     placeholder="Select Screen Name"
                     isSearchable={false}
                     components={{
@@ -305,6 +290,10 @@ const IllustrationImageAdd = () => {
                       IndicatorSeparator: () => null,
                     }}
                     className="w-full"
+                    menuPortalTarget={document.body}
+                    menuPosition="absolute"
+                    menu CeilingItemView={false}
+                    isDisabled={isSubmitting}
                   />
                 </div>
 
@@ -319,9 +308,6 @@ const IllustrationImageAdd = () => {
                     onChange={(option) => handleSelectChange("status", option)}
                     options={statusOptions}
                     styles={customStyles}
-                    menuPortalTarget={document.body}
-                    menuPosition="absolute"
-                    menuShouldScrollIntoView={false}
                     placeholder="Select Status"
                     isSearchable={false}
                     components={{
@@ -331,91 +317,91 @@ const IllustrationImageAdd = () => {
                       IndicatorSeparator: () => null,
                     }}
                     className="w-full"
+                    menuPortalTarget={document.body}
+                    menuPosition="absolute"
+                    menuShouldScrollIntoView={false}
+                    isDisabled={isSubmitting}
                   />
                 </div>
               </div>
 
-              {formData.status === "2" && (
-                <div className="flex flex-col w-full">
+              <div className="flex flex-row gap-x-4">
+                <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    Start Time
+                    Start Date and Time (Optional)
                   </label>
                   <input
                     type="datetime-local"
-                    {...register("startTime", {
-                      required: formData.status === "2" ? "Start time is required" : false,
-                    })}
+                    {...register("startTime")}
                     value={formData.startTime}
                     onChange={(e) => handleTimeChange("startTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
                     min={new Date().toISOString().slice(0, 16)}
+                    disabled={isSubmitting}
                   />
                   {errors.startTime && (
                     <p className="text-red-500 text-sm">{errors.startTime.message}</p>
                   )}
                 </div>
-              )}
 
-              {(formData.status === "1" || formData.status === "2") && (
-                <div className="flex flex-col w-full">
+                <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    End Time {formData.status === "1" && "(Optional)"}
+                    End Date and Time (Optional)
                   </label>
                   <input
                     type="datetime-local"
-                    {...register("endTime", {
-                      required: formData.status === "2" ? "End time is required" : false,
-                    })}
+                    {...register("endTime")}
                     value={formData.endTime}
                     onChange={(e) => handleTimeChange("endTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
                     min={formData.startTime || new Date().toISOString().slice(0, 16)}
+                    disabled={isSubmitting}
                   />
                   {errors.endTime && (
                     <p className="text-red-500 text-sm">{errors.endTime.message}</p>
                   )}
                 </div>
-              )}
+              </div>
             </div>
+
             <button
-              type="submit"
-              className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5 mr-2 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
-                    ></path>
-                  </svg>
-                  Submitting...
-                </>
-              ) : (
-                "Submit"
-              )}
-            </button>
+  type="submit"
+  className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+  }`}
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <svg
+      className="animate-spin h-5 w-5 mr-2 text-white"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  ) : null}
+  {isSubmitting
+    ? "Submitting..."
+    : id
+    ? "Update Illustration"
+    : "Add Illustration"}
+</button>
+
           </form>
         </div>
       </div>
-      <NotificationContainer />
+      <NotificationContainer style={{ zIndex: 10000 }} />
     </div>
   );
 };
