@@ -73,7 +73,7 @@ const ListUnitOptions = () => {
       setUnits(updatedUnits);
       setFilteredUnits(updatedUnits);
       setTotalPages(Math.ceil(updatedUnits.length / itemsPerPage));
-      NotificationManager.success('Unit deleted successfully', 'Success');
+      // NotificationManager.success('Unit deleted successfully', 'Success');
     }
   };
 

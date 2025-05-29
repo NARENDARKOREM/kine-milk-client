@@ -106,7 +106,7 @@ const ProductList = () => {
       setProduct(updatedProduct);
       setFilteredProduct(updatedProduct);
       setTotalPages(Math.ceil(updatedProduct.length / itemsPerPage));
-      NotificationManager.success("Product deleted successfully", "Success");
+      // NotificationManager.success("Product deleted successfully", "Success");
     }
   };
 
@@ -117,7 +117,7 @@ const ProductList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity("Product", id, currentStatus, setFilteredProduct, filteredProduct, field);
-      NotificationManager.success("Product status updated successfully", "Success");
+      // NotificationManager.success("Product status updated successfully", "Success");
     } catch (error) {
       console.error("Error toggling product status:", error);
       NotificationManager.error("Error updating product status", "Error");

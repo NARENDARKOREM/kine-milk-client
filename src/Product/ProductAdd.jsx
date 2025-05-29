@@ -523,11 +523,7 @@ const ProductAdd = () => {
               </h2>
             </div>
             <div className="h-full px-6 max-w-5xl">
-              {showLoader ? (
-                <div className="flex justify-center items-center h-64 w-full">
-                  <MilkLoader />
-                </div>
-              ) : (
+
                 <div className="bg-white rounded-xl border max-h-[70vh] w-[76vw] py-4 px-6 overflow-scroll scrollbar-none">
                   <form
                     onSubmit={handleSubmit(onSubmit)}
@@ -1089,7 +1085,6 @@ const ProductAdd = () => {
                     </div>
                   </form>
                 </div>
-              )}
             </div>
           </div>
         </main>
