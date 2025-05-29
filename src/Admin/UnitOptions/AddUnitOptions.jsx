@@ -125,11 +125,7 @@ const AddUnitOptions = () => {
 
   return (
     <div className="bg-[#f7fbff] h-full">
-      {isSubmitting ? (
-        <div className="flex justify-center items-center h-64 w-full">
-          <MilkLoader />
-        </div>
-      ) : (
+     
         <>
           <Header />
           <SimpleHeader
@@ -256,7 +252,7 @@ const AddUnitOptions = () => {
           </div>
           <NotificationContainer />
         </>
-      )}
+    
     </div>
   );
 };

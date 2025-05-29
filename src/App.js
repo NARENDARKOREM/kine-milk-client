@@ -32,8 +32,8 @@ import SubCompletedOrder from "./components/SubScriptionOrder/SubCompletedOrder"
 import SubCancelledOrder from "./components/SubScriptionOrder/SubCancelledOrder";
 import Banner from "./Admin/Banner/Banner";
 import BannerAdd from "./Admin/Banner/BannerAdd";
-import AdminCategoryList from "./Admin/Category/AdminCategoryList";
-import AdminCategoryAdd from "./Admin/Category/AdminCategoryAdd";
+// import AdminCategoryList from "./Admin/Category/AdminCategoryList";
+// import AdminCategoryAdd from "./Admin/Category/AdminCategoryAdd";
 import AdminDeliveryZoneAdd from "./Admin/DeliveryZone/AdminDeliveryZoneAdd";
 import Settings from "./Admin/Setting/Settings";
 import AddStore from "./components/Store/AddStore";
