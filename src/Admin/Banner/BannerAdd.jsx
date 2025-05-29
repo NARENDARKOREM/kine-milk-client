@@ -253,7 +253,7 @@ const BannerAdd = () => {
       <SimpleHeader name={"Banner Management"} />
       <div className="container px-6">
         <div className="bg-white max-h-max w-[76vw] rounded-xl border border-[#EAE5FF] py-4 px-6 overflow-y-auto scrollbar-none">
-          <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg">
+          <form onSubmit={handleSubmit(onSubmit)} className="w-full">
             <div className="flex flex-col w-full gap-y-4">
               <div className="flex flex-col w-full">
                 <label className="block text-left text-sm font-medium mb-1">
