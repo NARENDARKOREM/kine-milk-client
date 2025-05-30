@@ -27,12 +27,12 @@ const StoreWeightOptionAdd = () => {
     existing_quantity: "",
     existing_subscription_quantity: "",
   });
-  const [weightOptions, setWeightOptions] = useState([]); // Start with an empty table
+  const [weightOptions, setWeightOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingRowIndex, setEditingRowIndex] = useState(null);
 
-  // Fetch store ID and product details (including existing quantities for display)
+  // Fetch store ID and product details
   useEffect(() => {
     const id = Cookies.get("store_id");
     if (!id) {
@@ -51,33 +51,6 @@ const StoreWeightOptionAdd = () => {
           throw new Error("Product data not found in response.");
         }
         setProduct(fetchedData.product);
-
-        // Fetch existing cumulative quantities to display in the form (but not in the table)
-        const currentOptionsResponse = await api.get(`/storeweightoption/current/${product_inventory_id}`);
-        const currentOptions = currentOptionsResponse.data.map((option) => ({
-          weight_id: option.weight_id,
-          weight: option.weightOption?.weight || "N/A",
-          normal_price: option.weightOption?.normal_price || 0,
-          subscribe_price: option.weightOption?.subscribe_price || 0,
-          quantity: option.quantity || 0,
-          subscription_quantity: option.subscription_quantity || "0",
-          instant_total: (option.weightOption?.normal_price || 0) * (option.quantity || 0),
-          subscription_total: (option.weightOption?.subscribe_price || 0) * (option.subscription_quantity || 0),
-          grand_total: option.total || 0,
-        }));
-
-        // Filter out duplicates based on weight_id (just in case)
-        const uniqueOptions = [];
-        const seenWeightIds = new Set();
-        for (const option of currentOptions) {
-          if (!seenWeightIds.has(option.weight_id)) {
-            seenWeightIds.add(option.weight_id);
-            uniqueOptions.push(option);
-          }
-        }
-
-        // We won't set weightOptions here to keep the table empty initially
-        // Instead, we'll use the data to populate existing_quantity and existing_subscription_quantity when a weight option is selected
       } catch (error) {
         console.error("Error fetching product details:", error);
         NotificationManager.error("Failed to fetch product details.");
@@ -97,18 +70,19 @@ const StoreWeightOptionAdd = () => {
     let existingQuantity = 0;
     let existingSubscriptionQuantity = "0";
 
-    // Fetch existing quantities for the selected weight option
-    try {
-      const currentOptionsResponse = await api.get(`/storeweightoption/current/${product_inventory_id}`);
-      const currentOptions = currentOptionsResponse.data;
-      const existingOption = currentOptions.find((opt) => opt.weight_id === weightId);
-      if (existingOption) {
-        existingQuantity = existingOption.quantity || 0;
-        existingSubscriptionQuantity = existingOption.subscription_quantity || "0";
+    if (weightId) {
+      try {
+        const currentOptionsResponse = await api.get(`/storeweightoption/current/${product_inventory_id}`);
+        const currentOptions = currentOptionsResponse.data;
+        const existingOption = currentOptions.find((opt) => opt.weight_id === weightId);
+        if (existingOption) {
+          existingQuantity = existingOption.quantity || 0;
+          existingSubscriptionQuantity = existingOption.subscription_quantity || "0";
+        }
+      } catch (error) {
+        console.error("Error fetching existing quantities:", error);
+        NotificationManager.error("Failed to fetch existing quantities.");
       }
-    } catch (error) {
-      console.error("Error fetching existing quantities:", error);
-      NotificationManager.error("Failed to fetch existing quantities.");
     }
 
     const normalPrice = weightOption ? weightOption.normal_price : "";
@@ -144,7 +118,7 @@ const StoreWeightOptionAdd = () => {
     });
   };
 
-  // Add new weight option to table (without submitting)
+  // Add new weight option to table
   const addWeightOption = () => {
     if (!newWeightOption.weight_id) {
       NotificationManager.error("Please select a valid weight option.");
@@ -251,7 +225,7 @@ const StoreWeightOptionAdd = () => {
     setEditingRowIndex(null);
   };
 
-  // Remove weight option from table (no backend call since this is a session-only table)
+  // Remove weight option from table
   const removeWeightOption = (index) => {
     setWeightOptions((prev) => prev.filter((_, i) => i !== index));
     NotificationManager.success("Weight option removed from table!");
@@ -264,7 +238,6 @@ const StoreWeightOptionAdd = () => {
       return;
     }
 
-    // Check for duplicates in weightOptions before submitting
     const weightIds = weightOptions.map((opt) => opt.weight_id);
     const hasDuplicates = new Set(weightIds).size !== weightIds.length;
     if (hasDuplicates) {
@@ -286,8 +259,7 @@ const StoreWeightOptionAdd = () => {
 
       await api.post("/storeweightoption/add", payload);
       NotificationManager.success("Inventory added successfully!");
-      setWeightOptions([]); // Clear the table after submission
-
+      setWeightOptions([]);
       setNewWeightOption({
         weight_id: "",
         weight: "",
@@ -301,7 +273,7 @@ const StoreWeightOptionAdd = () => {
         existing_quantity: "",
         existing_subscription_quantity: "",
       });
-      navigate(`/inventory/${product_inventory_id}`)
+      navigate(`/inventory/${product_inventory_id}`);
     } catch (error) {
       console.error("Error adding inventory:", error);
       NotificationManager.error("Failed to add inventory.");
@@ -396,89 +368,85 @@ const StoreWeightOptionAdd = () => {
                             }}
                           />
                         </div>
-                        {newWeightOption.weight_id && (
+                        <div>
+                          <label className="block text-left">Instant Price</label>
+                          <input
+                            type="text"
+                            readOnly
+                            value={newWeightOption.normal_price}
+                            className="border p-2 rounded w-full"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-left">Existing Quantity</label>
+                          <input
+                            type="text"
+                            readOnly
+                            value={newWeightOption.existing_quantity}
+                            className="border p-2 rounded w-full bg-gray-100"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-left">
+                            Add Quantity <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            name="quantity"
+                            value={newWeightOption.quantity}
+                            onChange={handleWeightOptionChange}
+                            className="border p-2 rounded w-full"
+                            min="0"
+                          />
+                        </div>
+                        {product.subscription_required === 1 && (
                           <>
                             <div>
-                              <label className="block text-left">Instant Price</label>
+                              <label className="block text-left">Subscribe Price</label>
                               <input
                                 type="text"
                                 readOnly
-                                value={newWeightOption.normal_price}
+                                value={newWeightOption.subscribe_price}
                                 className="border p-2 rounded w-full"
                               />
                             </div>
                             <div>
-                              <label className="block text-left">Existing Quantity</label>
+                              <label className="block text-left">Existing Subscription Quantity</label>
                               <input
                                 type="text"
                                 readOnly
-                                value={newWeightOption.existing_quantity}
+                                value={newWeightOption.existing_subscription_quantity}
                                 className="border p-2 rounded w-full bg-gray-100"
                               />
                             </div>
                             <div>
                               <label className="block text-left">
-                                Add Quantity <span className="text-red-500">*</span>
+                                Add Subscription Quantity <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="number"
-                                name="quantity"
-                                value={newWeightOption.quantity}
+                                name="subscription_quantity"
+                                value={newWeightOption.subscription_quantity}
                                 onChange={handleWeightOptionChange}
                                 className="border p-2 rounded w-full"
                                 min="0"
                               />
                             </div>
-                            {product.subscription_required === 1 && (
-                              <>
-                                <div>
-                                  <label className="block text-left">Subscribe Price</label>
-                                  <input
-                                    type="text"
-                                    readOnly
-                                    value={newWeightOption.subscribe_price}
-                                    className="border p-2 rounded w-full"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-left">Existing Subscription Quantity</label>
-                                  <input
-                                    type="text"
-                                    readOnly
-                                    value={newWeightOption.existing_subscription_quantity}
-                                    className="border p-2 rounded w-full bg-gray-100"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-left">
-                                    Add Subscription Quantity <span className="text-red-500">*</span>
-                                  </label>
-                                  <input
-                                    type="number"
-                                    name="subscription_quantity"
-                                    value={newWeightOption.subscription_quantity}
-                                    onChange={handleWeightOptionChange}
-                                    className="border p-2 rounded w-full"
-                                    min="0"
-                                  />
-                                </div>
-                              </>
-                            )}
-                            <div className="flex items-end">
-                              <button
-                                type="button"
-                                onClick={addWeightOption}
-                                className="bg-[#393185] text-white py-2 px-4 rounded"
-                              >
-                                Add Quantity
-                              </button>
-                            </div>
                           </>
                         )}
                       </div>
+                      <div className="mt-4">
+                        <button
+                          type="button"
+                          onClick={addWeightOption}
+                          className="bg-[#393185] text-white py-2 px-4 rounded"
+                        >
+                          Add Quantity
+                        </button>
+                      </div>
 
                       {weightOptions.length > 0 && (
-                        <div>
+                        <div className="mt-6">
                           <label className="block text-left font-semibold mb-2">
                             Current Quantities to Add
                           </label>
@@ -609,62 +577,59 @@ const StoreWeightOptionAdd = () => {
                                                   strokeLinejoin="round"
                                                   strokeWidth={2}
                                                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                              />
-                                            </svg>
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => removeWeightOption(index)}
-                                            className="p-2 rounded"
-                                          >
-                                            <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              className="h-5 w-5 text-red-500"
-                                              fill="none"
-                                              viewBox="0 0 24 24"
-                                              stroke="currentColor"
+                                                />
+                                              </svg>
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => removeWeightOption(index)}
+                                              className="p-2 rounded"
                                             >
-                                              <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M9 7h6m-5 4v6m4-6v6"
-                                              />
-                                            </svg>
-                                          </button>
-                                        </>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                        <div className="mt-4 flex justify-end">
-                          <button
-                            type="button"
-                            onClick={submitWeightOptions}
-                            className="bg-[#393185] text-white py-2 px-4 rounded"
-                          >
-                            Add Inventory
-                          </button>
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-5 w-5 text-red-500"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M9 7h6m-5 4v6m4-6v6"
+                                                />
+                                              </svg>
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                          <div className="mt-4 flex justify-start">
+                            <button
+                              type="button"
+                              onClick={submitWeightOptions}
+                              className="bg-[#393185] text-white py-2 px-4 rounded"
+                            >
+                              Add Inventory
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </>
-                )}
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-       </div>   
         </main>
-        
         <NotificationContainer />
       </div>
-      
     </div>
-    
   );
 };
 

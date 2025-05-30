@@ -47,6 +47,7 @@ const StoresList = () => {
         setTotalPages(Math.ceil(storesData.length / itemsPerPage));
       } catch (error) {
         console.error("Error fetching Stores:", error);
+        NotificationManager.removeAll();
         NotificationManager.error("Failed to fetch stores", "Error", 3000);
       } finally {
         setIsLoading(false);
@@ -78,17 +79,16 @@ const StoresList = () => {
     return () => (document.body.style.overflow = "auto");
   }, [isModalOpen]);
 
-  const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = stores.filter((store) =>
-      Object.values(store).some((value) =>
-        String(value || "").toLowerCase().includes(querySearch)
-      )
-    );
-    setFilteredStores(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+ const handleSearch = (event) => {
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = stores.filter((store) =>
+    (store.title || "").toLowerCase().includes(querySearch)
+  );
+  setFilteredStores(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const sortData = (key) => {
     handleSort(filteredStores, key, sortConfig, setSortConfig, setFilteredStores);
@@ -115,12 +115,13 @@ const StoresList = () => {
         setStores(updatedStores);
         setFilteredStores(updatedStores);
         setTotalPages(Math.ceil(updatedStores.length / itemsPerPage));
-        NotificationManager.success("Store deleted successfully", "Success", 3000);
+        // NotificationManager.success("Store deleted successfully", "Success", 3000);
       } else {
         throw new Error("Failed to delete");
       }
     } catch (error) {
       console.error("Error deleting store:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Failed to delete store", "Error", 3000);
     }
   };
@@ -132,9 +133,10 @@ const StoresList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity("Stores", id, currentStatus, setFilteredStores, filteredStores, field);
-      NotificationManager.success("Store status updated successfully", "Success", 3000);
+      // NotificationManager.success("Store status updated successfully", "Success", 3000);
     } catch (error) {
       console.error("Error toggling store status:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Failed to update store status", "Error", 3000);
     }
   };

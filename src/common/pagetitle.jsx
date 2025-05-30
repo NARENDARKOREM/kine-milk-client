@@ -75,7 +75,7 @@ const Pagetitle = ({
       <div className="font-[700px] text-left w-full md:w-auto">
         
       <h3
-        className="flex items-center text-lg font-medium cursor-pointer"
+        className="flex items-center text-lg font-medium cursor-pointer text-[#393185]"
         onClick={handleBackClick}
       >
         <NavigateBeforeIcon className="mr-1" />

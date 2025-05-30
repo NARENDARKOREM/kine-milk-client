@@ -51,16 +51,16 @@ const ListUnitOptions = () => {
   };
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = units.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value || '').toLowerCase().includes(querySearch)
-      )
-    );
-    setFilteredUnits(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = units.filter((item) =>
+    (item.name?.toLowerCase().includes(querySearch) ||
+     item.unit?.toLowerCase().includes(querySearch))
+  );
+  setFilteredUnits(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const sortData = (key) => {
     handleSort(filteredUnits, key, sortConfig, setSortConfig, setFilteredUnits);

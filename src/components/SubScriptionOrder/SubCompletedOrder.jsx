@@ -117,7 +117,7 @@ const SubCompletedOrder = () => {
         .map((order, index) => ({
           id: order.id,
           index: (page - 1) * itemsPerPage + index + 1,
-          order_id: order.id || "N/A",
+          order_id: order.order_id || "N/A",
           order_date: order.odate ? order.odate.split("T")[0] : "N/A",
           sub_delivery_executive_name: order.subrider?.title || "N/A",
           status: order.status || "N/A",

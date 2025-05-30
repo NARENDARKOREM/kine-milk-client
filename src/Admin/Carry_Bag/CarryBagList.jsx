@@ -81,20 +81,19 @@ const CarryBagList = () => {
   }, [showModal]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = carryBags.filter((item) =>
-      Object.values(item).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue).toLowerCase().includes(querySearch)
-            )
-          : String(value).toLowerCase().includes(querySearch)
-      )
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = carryBags.filter((item) => {
+    return (
+      String(item.planType).toLowerCase().includes(querySearch) ||
+      String(item.cost).toLowerCase().includes(querySearch) ||
+      String(item.status === 1 ? "published" : "unpublished").includes(querySearch)
     );
-    setFilteredCarryBags(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  });
+  setFilteredCarryBags(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const handleDelete = async (id) => {
     const success = await DeleteEntity("CarryBag", id);

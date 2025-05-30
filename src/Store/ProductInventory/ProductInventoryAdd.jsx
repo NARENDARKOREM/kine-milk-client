@@ -16,10 +16,11 @@ const ProductInventoryAdd = () => {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isValid },
     trigger,
   } = useForm({
-    defaultValues: { category_id: "", product_id: "", date: "" },
+    defaultValues: { category_id: "", product_id: "" },
+    mode: "onChange", // Validate on change to update isValid in real-time
   });
 
   const navigate = useNavigate();
@@ -31,11 +32,11 @@ const ProductInventoryAdd = () => {
   const [products, setProducts] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [selectedCoupons, setSelectedCoupons] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     store_id: "",
     category_id: "",
     product_id: "",
-    date: "",
     coupons: [],
   });
 
@@ -77,13 +78,13 @@ const ProductInventoryAdd = () => {
             store_id: storeId,
             category_id: fetchedData.product?.category?.id || category?.id || "",
             product_id: fetchedData.product_id || "",
-            date: fetchedData.date,
             coupons: fetchedData.coupons || [],
           });
 
-          setValue("category_id", fetchedData.product?.category?.id || category?.id || "");
-          setValue("product_id", fetchedData.product_id);
-          setValue("date", fetchedData.date);
+          setValue("category_id", fetchedData.product?.category?.id || category?.id || "", {
+            shouldValidate: true,
+          });
+          setValue("product_id", fetchedData.product_id, { shouldValidate: true });
 
           setSelectedCategory(category || null);
 
@@ -137,8 +138,8 @@ const ProductInventoryAdd = () => {
     }));
 
     setValue("category_id", categoryId, { shouldValidate: true });
-    setValue("product_id", "");
-    await trigger("category_id");
+    setValue("product_id", "", { shouldValidate: true });
+    await trigger(["category_id", "product_id"]);
   };
 
   // Handle product selection
@@ -155,22 +156,11 @@ const ProductInventoryAdd = () => {
 
   // Form submission
   const onSubmit = async (data) => {
-    if (!formData.category_id) {
-      NotificationManager.removeAll();
-      NotificationManager.error("Please select a category.");
-      return;
-    }
-    if (!formData.product_id) {
-      NotificationManager.removeAll();
-      NotificationManager.error("Please select a product.");
-      return;
-    }
-
+    setIsSubmitting(true);
     try {
       const payload = {
         product_id: data.product_id,
         category_id: data.category_id,
-        date: data.date || new Date().toISOString().split("T")[0],
         store_id: storeId,
         coupons: selectedCoupons.map((coupon) => coupon.value),
       };
@@ -184,7 +174,6 @@ const ProductInventoryAdd = () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      NotificationManager.removeAll();
       NotificationManager.success(
         id
           ? "Product Inventory updated successfully!"
@@ -211,13 +200,14 @@ const ProductInventoryAdd = () => {
           }
         });
       } else {
-        NotificationManager.removeAll();
         NotificationManager.error(
           id
             ? "Failed to update Product Inventory."
             : "Failed to add Product Inventory."
         );
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -307,9 +297,15 @@ const ProductInventoryAdd = () => {
                       />
                       {errors.category_id && (
                         <p className="text-red-500 text-sm">
-                          {errors.category_id.message}
+                          Category is required
                         </p>
                       )}
+                      <input
+                        type="hidden"
+                        {...register("category_id", {
+                          required: "Category is required",
+                        })}
+                      />
                     </div>
                     <div>
                       <label className="block text-left">
@@ -334,9 +330,15 @@ const ProductInventoryAdd = () => {
                       />
                       {errors.product_id && (
                         <p className="text-red-500 text-sm">
-                          {errors.product_id.message}
+                          Product is required
                         </p>
                       )}
+                      <input
+                        type="hidden"
+                        {...register("product_id", {
+                          required: "Product is required",
+                        })}
+                      />
                     </div>
                   </div>
 
@@ -399,12 +401,41 @@ const ProductInventoryAdd = () => {
                     </div>
                   </div>
 
-                  <button
+                  <div>
+                    <button
                     type="submit"
-                    className="mt-6 bg-[#393185] w-[13vw] text-white py-2 px-4 rounded self-start"
+                    className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+                      isSubmitting || !isValid ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={isSubmitting || !isValid}
                   >
-                    {id ? "Update Inventory" : "Add Inventory"}
+                    {isSubmitting ? (
+                      <svg
+                        className="animate-spin h-5 w-5 mr-2 text-white"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    ) : null}
+                    {isSubmitting
+                      ? "Submitting..."
+                      : id
+                      ? "Update Inventory"
+                      : "Add Inventory"}
                   </button>
+                  </div>
                 </form>
               </div>
             </div>

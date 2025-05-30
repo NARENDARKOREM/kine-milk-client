@@ -78,20 +78,38 @@ const ProductInventoryList = () => {
   }, [showModal]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = products.filter((item) =>
-      Object.values(item).some((value) =>
-        value && typeof value === "object"
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
+  const querySearch = event.target.value.toLowerCase();
+
+  const filteredData = products.filter((item) => {
+    const title = item.inventoryProducts?.title || "";
+    
+    const totalQuantity = item.storeWeightOptions?.reduce(
+      (sum, option) => sum + (option.quantity || 0),
+      0
     );
-    setFilteredProducts(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+
+    const totalSubscriptionQuantity = item.storeWeightOptions?.reduce(
+      (sum, option) => sum + (option.subscription_quantity || 0),
+      0
+    );
+
+    const couponTitle = item.coupons?.map((coupon) => coupon.coupon_title).join(", ") || "";
+    const couponValue = item.coupons?.map((coupon) => coupon.coupon_value).join(", ") || "";
+
+    return (
+      title.toLowerCase().includes(querySearch) ||
+      String(totalQuantity).toLowerCase().includes(querySearch) ||
+      String(totalSubscriptionQuantity).toLowerCase().includes(querySearch) ||
+      couponTitle.toLowerCase().includes(querySearch) ||
+      couponValue.toLowerCase().includes(querySearch)
+    );
+  });
+
+  setFilteredProducts(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const handleDelete = async (id) => {
     const success = await DeleteEntity("product_Inventory", id);

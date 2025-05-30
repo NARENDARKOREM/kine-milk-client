@@ -77,20 +77,17 @@ const RiderTimeSlotList = () => {
   }, [location]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = riderTimeSlots.filter((item) =>
-      Object.values(item).some((value) =>
-        value && typeof value === "object"
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
-    );
-    setFilteredRiderTimeSlots(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = riderTimeSlots.filter((item) =>
+    ["mintime", "maxtime"].some((key) =>
+      String(item[key] || "").toLowerCase().includes(querySearch)
+    )
+  );
+  setFilteredRiderTimeSlots(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const handleDelete = async (id) => {
     const success = await DeleteEntity("RiderTimeSlot", id);

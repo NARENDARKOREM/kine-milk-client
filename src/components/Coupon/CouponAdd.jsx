@@ -22,7 +22,7 @@ const CouponAdd = () => {
   const location = useLocation();
   const id = location.state ? location.state.id : null;
   const navigate = useNavigate();
-
+  const [isSubmitting,setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     id: id || null,
     coupon_img: null,
@@ -195,6 +195,7 @@ const CouponAdd = () => {
   };
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true)
     try {
       if (!id && !formData.coupon_img) {
         setError("coupon_img", {
@@ -289,6 +290,7 @@ const CouponAdd = () => {
         );
       }
     }
+    setIsSubmitting(false)
   };
 
   return (
@@ -529,12 +531,39 @@ const CouponAdd = () => {
                     </div>
 
                     <div className="md:col-span-3 flex justify-start mt-4">
-                      <button
-                        type="submit"
-                        className="bg-[#393185] text-white px-6 py-3 rounded-lg"
-                      >
-                        {id ? "Update Coupon" : "Add Coupon"}
-                      </button>
+<button
+  type="submit"
+  className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+  }`}
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <svg
+      className="animate-spin h-5 w-5 mr-2 text-white"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  ) : null}
+  {isSubmitting
+    ? "Submitting..."
+    : id
+    ? "Update Coupon"
+    : "Add Coupon"}
+</button>
                     </div>
                   </div>
                 </form>

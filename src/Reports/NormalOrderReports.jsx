@@ -20,7 +20,6 @@ const NormalOrderReports = () => {
       setIsLoadingStores(true);
       try {
         const response = await api.get('/store/fetch');
-        console.log('Fetched stores:', response.data.stores);
         setStores(response.data.stores || []);
       } catch (error) {
         console.error('Error fetching stores:', error);

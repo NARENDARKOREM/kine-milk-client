@@ -57,20 +57,20 @@ const FaqList = () => {
   }, [location]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = faq.filter((item) =>
-      Object.values(item).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
+  const querySearch = event.target.value.toLowerCase();
+
+  const filteredData = faq.filter((item) => {
+    return (
+      String(item.question || "").toLowerCase().includes(querySearch) ||
+      String(item.answer || "").toLowerCase().includes(querySearch)
     );
-    setFilteredFaq(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  });
+
+  setFilteredFaq(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const sortData = (key) => {
     handleSort(filteredFaq, key, sortConfig, setSortConfig, setFilteredFaq);
@@ -83,8 +83,9 @@ const FaqList = () => {
       setFaq(updatedFaq);
       setFilteredFaq(updatedFaq);
       setTotalPages(Math.ceil(updatedFaq.length / itemsPerPage));
-      NotificationManager.success("FAQ deleted successfully", "Success", 3000);
+      // NotificationManager.success("FAQ deleted successfully", "Success", 3000);
     } else {
+      NotificationManager.removeAll();
       NotificationManager.error("Failed to delete FAQ", "Error", 3000);
     }
   };
@@ -96,9 +97,10 @@ const FaqList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity("FAQ", id, currentStatus, setFilteredFaq, filteredFaq, field);
-      NotificationManager.success("FAQ status updated successfully", "Success", 3000);
+      // NotificationManager.success("FAQ status updated successfully", "Success", 3000);
     } catch (error) {
       console.error("Error toggling FAQ status:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Failed to update FAQ status", "Error", 3000);
     }
   };

@@ -40,6 +40,7 @@ const CategoryList = () => {
         setTotalPages(Math.ceil(categoryData.length / itemsPerPage));
       } catch (error) {
         console.error("Error fetching categories:", error);
+        NotificationManager.removeAll();
         NotificationManager.error("Error fetching categories", "Error");
       } finally {
         setIsLoading(false);
@@ -57,20 +58,15 @@ const CategoryList = () => {
   }, [location]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = categories.filter((item) =>
-      Object.values(item).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
-    );
-    setFilteredCategories(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = categories.filter((item) =>
+    (item.title || "").toLowerCase().includes(querySearch)
+  );
+  setFilteredCategories(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const sortData = (key) => {
     handleSort(filteredCategories, key, sortConfig, setSortConfig, setFilteredCategories);
@@ -83,7 +79,7 @@ const CategoryList = () => {
       setCategories(updatedCategories);
       setFilteredCategories(updatedCategories);
       setTotalPages(Math.ceil(updatedCategories.length / itemsPerPage));
-      NotificationManager.success("Category deleted successfully", "Success");
+      // NotificationManager.success("Category deleted successfully", "Success");
     }
   };
 
@@ -94,9 +90,10 @@ const CategoryList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity("Category", id, currentStatus, setFilteredCategories, filteredCategories, field);
-      NotificationManager.success("Category status updated successfully", "Success");
+      // NotificationManager.success("Category status updated successfully", "Success");
     } catch (error) {
       console.error("Error toggling category status:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Error updating category status", "Error");
     }
   };

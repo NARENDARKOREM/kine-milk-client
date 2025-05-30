@@ -10,6 +10,7 @@ import { ReactComponent as Download } from "../assets/images/Download.svg";
 
 const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate, storeId }) => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [page, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -20,14 +21,32 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
 
   useEffect(() => {
     fetchOrders();
-  }, [debouncedSearch, fromDate, toDate, page, storeId]);
+  }, [fromDate, toDate, page, storeId]);
+
+  useEffect(() => {
+    // Filter orders locally based on searchTerm
+    const lowerSearchTerm = debouncedSearch.toLowerCase();
+    const filtered = orders.filter((order) =>
+      [
+        String(order.order_id),
+        order.order_date ? new Date(order.order_date).toLocaleDateString() : "N/A",
+        order.username || "N/A",
+        order.store_name || "N/A",
+        order.order_status || "N/A",
+        order.user_mobile_no || "N/A",
+        order.timeslot || "N/A",
+      ].some((field) => field.toLowerCase().includes(lowerSearchTerm))
+    );
+    setFilteredOrders(filtered);
+    setTotalItems(filtered.length);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+  }, [debouncedSearch, orders]);
 
   const fetchOrders = async () => {
     setIsLoading(true);
     setShowLoader(true);
     try {
       const params = {
-        search: debouncedSearch,
         fromDate,
         toDate,
         storeId: storeId || undefined,
@@ -35,9 +54,10 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
         limit: itemsPerPage,
       };
       const response = await api.get(`/orders/${reportType}-orders`, { params });
-      console.log(response,"rrrrrrrrrrrrrrrrrrrr")
+      console.log(response, "rrrrrrrrrrrrrrrrrrrr");
       const { orders, total, totalPages } = response.data;
       setOrders(orders || []);
+      setFilteredOrders(orders || []);
       setTotalItems(total || 0);
       setTotalPages(totalPages || 1);
     } catch (error) {
@@ -47,6 +67,7 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
         3000
       );
       setOrders([]);
+      setFilteredOrders([]);
     } finally {
       setIsLoading(false);
       setTimeout(() => setShowLoader(false), 2000);
@@ -114,7 +135,7 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
   return (
     <div className="p-4 flex-1 overflow-auto scrollbar-color h-[65vh] bg-[#f7fbff]">
       <div className="bg-white border border-[#EAEAFF] shadow-sm rounded-md p-2 h-[max-content]">
-        <table className="w-full text-[12px]" aria-label="Normal orders report table">
+        <table className="w-full text-[12px]" aria-label="Orders report table">
           <thead className="text-[12px] text-black font-bold">
             <tr className="border-b-[1px] border-[#F3E6F2] bg-white">
               <th className="p-2 font-medium text-left">S.No.</th>
@@ -137,14 +158,14 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
                   </div>
                 </td>
               </tr>
-            ) : orders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <tr>
                 <td colSpan="9" className="p-2 text-center text-[12px] font-medium text-[#4D5D6B]">
-                  {storeId ? "Orders are not found for this store" : "No data available"}
+                  {storeId ? "Orders are not found for this store" : debouncedSearch ? "No orders match the search" : "No data available"}
                 </td>
               </tr>
             ) : (
-              orders.map((order, index) => (
+              filteredOrders.slice((page - 1) * itemsPerPage, page * itemsPerPage).map((order, index) => (
                 <tr key={order.order_id} className="border-b border-[#F3E6F2]">
                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
                     {(page - 1) * itemsPerPage + index + 1}
@@ -168,7 +189,7 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
                     {order.user_mobile_no || "N/A"}
                   </td>
                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
-                    {order.timeslot || order.timeslots || "N/A"}
+                    {order.timeslot || "N/A"}
                   </td>
                   <td className="p-2 text-center">
                     <div className="flex gap-2 justify-center">

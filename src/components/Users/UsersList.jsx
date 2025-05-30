@@ -42,20 +42,27 @@ const UsersList = () => {
     fetchUsers();
   }, []);
 
-  const handleSearch = (event) => {
-    const query = event.target.value.toLowerCase();
-    const filtered = users.filter((user) =>
-      Object.values(user).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(query)
-            )
-          : String(value || "").toLowerCase().includes(query)
-      )
+ const handleSearch = (event) => {
+  const query = event.target.value.toLowerCase();
+
+  const filtered = users.filter((user) => {
+    const name = String(user.name || "").toLowerCase();
+    const email = String(user.email || "").toLowerCase();
+    const mobile = String(user.mobile || "").toLowerCase();
+    const joinDate = String(user.registartion_date || "").split("T")[0].toLowerCase();
+
+    return (
+      name.includes(query) ||
+      email.includes(query) ||
+      mobile.includes(query) ||
+      joinDate.includes(query)
     );
-    setFilteredUsers(filtered);
-    setCurrentPage(1);
-  };
+  });
+
+  setFilteredUsers(filtered);
+  setCurrentPage(1);
+};
+
 
   const handleToggleChange = async (id, currentStatus) => {
     try {

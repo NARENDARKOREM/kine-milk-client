@@ -21,6 +21,7 @@ const TimeslotAdd = () => {
     maxtime: "",
     status: "",
   });
+  const [isSubmitting,setIsSubmitting] = useState(false)
 
   const {
     register,
@@ -87,6 +88,7 @@ const TimeslotAdd = () => {
   };
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true)
     try {
       // Check status first and return early if missing
       if (!data.status) {
@@ -117,6 +119,7 @@ const TimeslotAdd = () => {
       NotificationManager.removeAll();
       NotificationManager.error(error.message || "An error occurred");
     }
+    setIsSubmitting(false)
   };
 
   const customStyles = {
@@ -258,14 +261,39 @@ const TimeslotAdd = () => {
                 </div>
 
                 {/* Submit Button */}
-                <button
-                  type="submit"
-                  className={`py-2 mt-6 float-start ${
-                    id ? "bg-[#393185] hover:bg-[#393185]" : "bg-[#393185] hover:bg-[#393185]"
-                  } text-white rounded-lg w-[150px] h-12 font-bold`}
-                >
-                  {id ? "Update Time Slot" : "Add Time Slot"}
-                </button>
+<button
+  type="submit"
+  className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+  }`}
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <svg
+      className="animate-spin h-5 w-5 mr-2 text-white"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  ) : null}
+  {isSubmitting
+    ? "Submitting..."
+    : id
+    ? "Update Time Slot"
+    : "Add Time Slot"}
+</button>
               </form>
             </div>
           </div>
