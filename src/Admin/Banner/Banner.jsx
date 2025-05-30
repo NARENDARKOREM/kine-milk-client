@@ -80,21 +80,35 @@ const Banner = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showModal]);
 
-  const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = banners.filter((item) =>
-      Object.values(item).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue).toLowerCase().includes(querySearch)
-            )
-          : String(value).toLowerCase().includes(querySearch)
-      )
-    );
-    setFilteredBanners(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+ const handleSearch = (event) => {
+  const querySearch = event.target.value.toLowerCase();
+
+  const filteredData = banners.filter((item) => {
+    const planTypeMatch = item.planType?.toLowerCase().includes(querySearch);
+    const startTimeMatch = item.startTime
+      ? new Date(item.startTime)
+          .toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+          .toLowerCase()
+          .includes(querySearch)
+      : false;
+    const endTimeMatch = item.endTime
+      ? new Date(item.endTime)
+          .toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+          .toLowerCase()
+          .includes(querySearch)
+      : false;
+    const statusMatch = (item.status === 1 ? "published" : "unpublished")
+      .toLowerCase()
+      .includes(querySearch);
+
+    return planTypeMatch || startTimeMatch || endTimeMatch || statusMatch;
+  });
+
+  setFilteredBanners(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const handleDelete = async (id) => {
     const success = await DeleteEntity("Banner", id);

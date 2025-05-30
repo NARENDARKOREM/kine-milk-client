@@ -80,20 +80,36 @@ const ProductList = () => {
   }, [isModalOpen]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = product.filter((item) =>
-      Object.values(item).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = product.filter((item) => {
+    const title = String(item.title || "").toLowerCase();
+    const discount = String(item.discount || "").toLowerCase();
+    const outOfStock = item.out_of_stock ? "yes" : "no";
+
+    const mrp_price =
+      Array.isArray(item.weightOptions) && item.weightOptions.length > 0
+        ? String(item.weightOptions[0].mrp_price || "").toLowerCase()
+        : "";
+
+    const normal_price =
+      Array.isArray(item.weightOptions) && item.weightOptions.length > 0
+        ? String(item.weightOptions[0].normal_price || "").toLowerCase()
+        : "";
+
+    return (
+      title.includes(querySearch) ||
+      discount.includes(querySearch) ||
+      mrp_price.includes(querySearch) ||
+      normal_price.includes(querySearch) ||
+      outOfStock.includes(querySearch)
     );
-    setFilteredProduct(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  });
+
+  setFilteredProduct(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const sortData = (key) => {
     handleSort(filteredProduct, key, sortConfig, setSortConfig, setFilteredProduct);
@@ -170,7 +186,7 @@ const ProductList = () => {
     "Status",
     "Discount",
     "MRP Price",
-    "Normal Price",
+    "Instant Price",
     "Out of Stock",
   ];
 

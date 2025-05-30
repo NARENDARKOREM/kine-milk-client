@@ -42,17 +42,29 @@ const Productreviews = () => {
   }, []);
 
   const handleSearch = (event) => {
-    const query = event.target.value.toLowerCase();
-    const filtered = reviews.filter((review) =>
-      [
-        review.UserDetails?.name?.toLowerCase() || "",
-        review.productDetails?.title?.toLowerCase() || "",
-        review.review?.toLowerCase() || "",
-      ].some((value) => value.includes(query))
+  const query = event.target.value.toLowerCase();
+  const filtered = reviews.filter((review) => {
+    const username = review.UserDetails?.name?.toLowerCase() || "";
+    const productName = review.productDetails?.title?.toLowerCase() || "";
+    const reviewText = review.review?.toLowerCase() || "";
+    const createdAt = review.createdAt
+      ? new Date(review.createdAt).toISOString().split("T")[0]
+      : "";
+    const rating = String(review.rating || "").toLowerCase();
+
+    return (
+      username.includes(query) ||
+      productName.includes(query) ||
+      reviewText.includes(query) ||
+      createdAt.includes(query) ||
+      rating.includes(query)
     );
-    setFilteredReviews(filtered);
-    setCurrentPage(1);
-  };
+  });
+
+  setFilteredReviews(filtered);
+  setCurrentPage(1);
+};
+
 
   const openReviewModal = (review) => {
     setSelectedReview(review);

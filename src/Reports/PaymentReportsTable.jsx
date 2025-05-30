@@ -10,6 +10,7 @@ import { ReactComponent as Download } from "../assets/images/Download.svg";
 
 const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate, storeId }) => {
   const [payments, setPayments] = useState([]);
+  const [filteredPayments, setFilteredPayments] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -20,14 +21,35 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
 
   useEffect(() => {
     fetchPayments();
-  }, [debouncedSearch, fromDate, toDate, currentPage, storeId]);
+  }, [fromDate, toDate, currentPage, storeId]);
+
+  useEffect(() => {
+    // Filter payments locally based on searchTerm for specified fields
+    const lowerSearchTerm = debouncedSearch.toLowerCase();
+    const filtered = payments.filter((payment) =>
+      [
+        String(payment.order_id || "N/A"),
+        payment.order_date ? new Date(payment.order_date).toLocaleDateString() : "N/A",
+        payment.username || "N/A",
+        payment.store_name || "N/A",
+        String(payment.delivery_charge || 0),
+        String(payment.coupon_amount || 0),
+        String(payment.tax || 0),
+        String(payment.subtotal || 0),
+        String(payment.total_amount || 0),
+        payment.transaction_id || "N/A",
+      ].some((field) => field.toLowerCase().includes(lowerSearchTerm))
+    );
+    setFilteredPayments(filtered);
+    setTotalItems(filtered.length);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+  }, [debouncedSearch, payments]);
 
   const fetchPayments = async () => {
     setIsLoading(true);
     setShowLoader(true);
     try {
       const params = {
-        search: debouncedSearch,
         fromDate,
         toDate,
         storeId: storeId || undefined,
@@ -37,6 +59,7 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
       const response = await api.get(`/payments/${reportType}-payments`, { params });
       const { payments, total, totalPages } = response.data;
       setPayments(payments || []);
+      setFilteredPayments(payments || []);
       setTotalItems(total || 0);
       setTotalPages(totalPages || 1);
     } catch (error) {
@@ -46,6 +69,7 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
         3000
       );
       setPayments([]);
+      setFilteredPayments([]);
     } finally {
       setIsLoading(false);
       setTimeout(() => setShowLoader(false), 2000);
@@ -119,7 +143,10 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
               <th className="p-2 font-medium text-left">Delivery Charge</th>
               <th className="p-2 font-medium text-left">Coupon Amount</th>
               {reportType === "subscribe" && (
-                <th className="p-2 font-medium text-left">End Date</th>
+                <>
+                  <th className="p-2 font-medium text-left">Start Date</th>
+                  <th className="p-2 font-medium text-left">End Date</th>
+                </>
               )}
               <th className="p-2 font-medium text-left">Tax</th>
               <th className="p-2 font-medium text-left">Subtotal</th>
@@ -131,14 +158,14 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
           <tbody>
             {showLoader ? (
               <tr>
-                <td colSpan={reportType === "subscribe" ? 13 : 12} className="text-center py-2">
+                <td colSpan={reportType === "subscribe" ? 14 : 12} className="text-center py-2">
                   <div className="flex justify-center items-center h-64 w-full">
                     <MilkLoader />
                   </div>
                 </td>
               </tr>
-            ) : payments.length > 0 ? (
-              payments.map((payment, index) => (
+            ) : filteredPayments.length > 0 ? (
+              filteredPayments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((payment, index) => (
                 <tr key={payment.order_id} className="border-b border-[#F3E6F2]">
                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
                     {(currentPage - 1) * itemsPerPage + index + 1}
@@ -149,7 +176,7 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
                     {payment.order_date ? new Date(payment.order_date).toLocaleDateString() : "N/A"}
                   </td>
-                  <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                  <td className="p-2 text-left text-[12px] font-medium text-[#4D5d6b]">
                     {payment.username || "N/A"}
                   </td>
                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
@@ -162,9 +189,14 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
                     {payment.coupon_amount || 0}
                   </td>
                   {reportType === "subscribe" && (
-                    <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
-                      {payment.end_date ? new Date(payment.end_date).toLocaleDateString() : "N/A"}
-                    </td>
+                    <>
+                      <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                        {payment.start_date || "N/A"}
+                      </td>
+                      <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                        {payment.end_date || "N/A"}
+                      </td>
+                    </>
                   )}
                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
                     {payment.tax || 0}
@@ -192,10 +224,10 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
             ) : (
               <tr>
                 <td
-                  colSpan={reportType === "subscribe" ? 13 : 12}
+                  colSpan={reportType === "subscribe" ? 14 : 12}
                   className="p-2 text-center text-[12px] font-medium text-[#4D5D6B]"
                 >
-                  {storeId ? "Payments are not found for this store" : "No data available"}
+                  {storeId ? "Payments are not found for this store" : debouncedSearch ? "No payments match the search" : "No data available"}
                 </td>
               </tr>
             )}
@@ -236,17 +268,6 @@ const PaymentReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDa
           </div>
         </div>
       </div>
-      {/* {totalItems > 0 && (
-        <div className="mt-4 flex justify-end">
-          <button
-            className="bg-[#393185] text-white px-4 py-2 rounded hover:bg-[#2a247d] transition"
-            onClick={handleDownloadAll}
-            aria-label="Download all payments"
-          >
-            Download All Payments
-          </button>
-        </div>
-      )} */}
     </div>
   );
 };

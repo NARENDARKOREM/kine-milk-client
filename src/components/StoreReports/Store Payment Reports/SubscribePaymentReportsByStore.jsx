@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import Header from '../../../common/Header';
 import ReportsTitle from '../../../Reports/ReportsTitle';
 import PaymentReportsTableByStore from './PaymentReportsTableByStore';
-import { NotificationContainer, NotificationManager } from "react-notifications";
+import { NotificationContainer, NotificationManager } from 'react-notifications';
 import api from '../../../utils/api';
-import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 
 const SubscribePaymentReportsByStore = () => {
@@ -19,9 +18,9 @@ const SubscribePaymentReportsByStore = () => {
 
   const handleDownloadAll = async () => {
     try {
-      const store_id = Cookies.get('store_id'); // Corrected to use 'token' cookie
+      const store_id = Cookies.get('store_id');
       if (!store_id) {
-        throw new Error('Store ID not found in token');
+        throw new Error('Store ID not found in cookies');
       }
       const response = await api.get('/payments/subscribe-payments-by-store/download', {
         params: { store_id, fromDate, toDate },
@@ -34,8 +33,11 @@ const SubscribePaymentReportsByStore = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      NotificationManager.removeAll()
+      NotificationManager.success('Download successful!');
     } catch (error) {
       console.error('Error downloading all subscribe payments:', error);
+      NotificationManager.removeAll()
       NotificationManager.error('Failed to download subscribe payments.');
     }
   };
@@ -59,6 +61,7 @@ const SubscribePaymentReportsByStore = () => {
         fromDate={fromDate}
         toDate={toDate}
       />
+      <NotificationContainer />
     </div>
   );
 };

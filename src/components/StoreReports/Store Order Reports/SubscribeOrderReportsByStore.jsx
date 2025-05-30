@@ -4,6 +4,7 @@ import ReportsTitle from '../../../Reports/ReportsTitle';
 import OrderReportsTableByStore from './OrderReportsTableByStore';
 import api from '../../../utils/api';
 import Cookies from 'js-cookie';
+import { NotificationContainer, NotificationManager } from "react-notifications";
 
 const SubscribeOrderReportsByStore = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +22,7 @@ const SubscribeOrderReportsByStore = () => {
       if (!store_id) {
         throw new Error('Store ID not found in cookies');
       }
-      const response = await api.get('/orders/subscribe-orders-by-store/download', {
+      const response = await api.get('/orders/orders/subscribe-orders-by-store/download', {
         params: { store_id, fromDate, toDate },
         responseType: 'blob',
       });
@@ -32,8 +33,13 @@ const SubscribeOrderReportsByStore = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      NotificationManager.removeAll()
+      NotificationManager.success('Download successful');
     } catch (error) {
       console.error('Error downloading all subscribe orders:', error);
+      NotificationManager.removeAll()
+      NotificationManager.error('Failed to download all orders.');
     }
   };
 

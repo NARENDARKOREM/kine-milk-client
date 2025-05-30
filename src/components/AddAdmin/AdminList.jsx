@@ -42,19 +42,18 @@ const AdminList = () => {
     fetchAdmins();
   }, []);
 
-  const handleSearch = (event) => {
-    const querySearch = event?.target?.value?.toLowerCase() || "";
-    if (!admins) return;
+ const handleSearch = (event) => {
+  const querySearch = event?.target?.value?.toLowerCase() || "";
+  if (!admins) return;
 
-    const filteredData = admins.filter((admin) =>
-      Object.values(admin).some((value) =>
-        String(value ?? "").toLowerCase().includes(querySearch)
-      )
-    );
+  const filteredData = admins.filter((admin) =>
+    (admin.email ?? "").toLowerCase().includes(querySearch)
+  );
 
-    setFilteredAdmins(filteredData);
-    setCurrentPage(1);
-  };
+  setFilteredAdmins(filteredData);
+  setCurrentPage(1);
+};
+
 
   const indexOfLastAdmin = currentPage * itemsPerPage;
   const indexOfFirstAdmin = indexOfLastAdmin - itemsPerPage;

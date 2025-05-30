@@ -75,20 +75,16 @@ const ProductImagesList = () => {
   }, [isModalOpen]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = allImages.filter((image) =>
-      Object.values(image).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
-    );
-    setFilteredImages(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = allImages.filter((image) => {
+    const productName = image.product?.title?.toLowerCase() || "";
+    return productName.includes(querySearch);
+  });
+  setFilteredImages(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const sortData = (key) => {
     handleSort(filteredImages, key, sortConfig, setSortConfig, setFilteredImages);

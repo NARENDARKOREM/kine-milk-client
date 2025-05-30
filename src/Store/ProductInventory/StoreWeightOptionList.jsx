@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  NotificationContainer,
-  NotificationManager,
-} from "react-notifications";
+import { NotificationContainer, NotificationManager } from "react-notifications";
 import "react-notifications/lib/notifications.css";
 import Header from "../../common/Header";
 import Pagetitle from "../../common/pagetitle";
@@ -56,7 +53,13 @@ const StoreWeightOptionList = () => {
           quantity: option.quantity || "N/A",
           subscription_quantity: option.subscription_quantity || "N/A",
           total: option.total || "N/A",
-          createdAt: new Date(option.createdAt).toLocaleDateString() || "N/A",
+          createdAt: option.createdAt
+            ? new Date(option.createdAt).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            : "N/A",
           product_name: fetchedProduct?.title || "Inventory List",
         }));
 
@@ -82,9 +85,16 @@ const StoreWeightOptionList = () => {
   const handleSearch = (event) => {
     const querySearch = event.target.value.toLowerCase();
     const filteredData = weightOptions.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value || "").toLowerCase().includes(querySearch)
-      )
+      [
+        item.weight,
+        item.normal_price,
+        item.subscribe_price,
+        item.mrp_price,
+        item.quantity,
+        item.subscription_quantity,
+        item.total,
+        item.createdAt,
+      ].some((value) => String(value || "").toLowerCase().includes(querySearch))
     );
     setFilteredWeightOptions(filteredData);
     setPage(1);
@@ -99,7 +109,7 @@ const StoreWeightOptionList = () => {
 
   const handlePrevious = () => {
     if (page > 1) {
-      setPage(page - 1);
+      setPage(page -  1);
     }
   };
 
@@ -152,6 +162,7 @@ const StoreWeightOptionList = () => {
   const handleAddQuantity = () => {
     navigate(`/store/add-weight-option/${product_inventory_id}`);
   };
+
   return (
     <div className="h-screen flex">
       <div className="flex flex-1 flex-col bg-[#f7fbff]">
@@ -170,10 +181,7 @@ const StoreWeightOptionList = () => {
               <thead className="text-[12px] text-black">
                 <tr className="border-b-[1px] border-[#F3E6F2] bg-white">
                   {columns.map((column, index) => (
-                    <th
-                      key={index}
-                      className="p-2 font-medium text-left"
-                    >
+                    <th key={index} className="p-2 font-medium text-left">
                       {column}
                     </th>
                   ))}
@@ -182,10 +190,7 @@ const StoreWeightOptionList = () => {
               <tbody>
                 {showLoader ? (
                   <tr>
-                    <td
-                      colSpan={columns.length}
-                      className="text-center py-2"
-                    >
+                    <td colSpan={columns.length} className="text-center py-2">
                       <div className="flex justify-center items-center h-64 w-full">
                         <MilkLoader />
                       </div>

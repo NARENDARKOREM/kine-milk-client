@@ -83,21 +83,29 @@ const CouponList = () => {
     return () => (document.body.style.overflow = "auto");
   }, [isModalOpen]);
 
-  const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = coupon.filter((item) =>
-      Object.values(item).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
+ const handleSearch = (event) => {
+  const querySearch = event.target.value.toLowerCase();
+
+  const filteredData = coupon.filter((item) => {
+    const statusText = item.status === 1 ? "published" : "unpublished";
+
+    return (
+      String(item.coupon_title || "").toLowerCase().includes(querySearch) ||
+      String(item.subtitle || "").toLowerCase().includes(querySearch) ||
+      String(item.coupon_code || "").toLowerCase().includes(querySearch) ||
+      String(item.start_date || "").toLowerCase().includes(querySearch) ||
+      String(item.end_date || "").toLowerCase().includes(querySearch) ||
+      String(item.min_amt || "").toLowerCase().includes(querySearch) ||
+      String(item.coupon_val || "").toLowerCase().includes(querySearch) ||
+      statusText.includes(querySearch)
     );
-    setFilteredCoupon(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  });
+
+  setFilteredCoupon(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const sortData = (key) => {
     handleSort(filteredCoupon, key, sortConfig, setSortConfig, setFilteredCoupon);

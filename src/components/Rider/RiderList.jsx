@@ -95,21 +95,21 @@ const RiderList = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showModal]);
 
-  const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = riders.filter((item) =>
-      Object.values(item).some((value) =>
-        value && typeof value === "object"
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue || "").toLowerCase().includes(querySearch)
-            )
-          : String(value || "").toLowerCase().includes(querySearch)
-      )
-    );
-    setFilteredRiders(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+ const handleSearch = (event) => {
+  const querySearch = event.target.value.toLowerCase();
+  const filteredData = riders.filter((item) => {
+    const titleMatch = item.title?.toLowerCase().includes(querySearch);
+    const emailMatch = item.email?.toLowerCase().includes(querySearch);
+    const mobileMatch = item.mobile?.toLowerCase().includes(querySearch);
+    const timeSlotMatch = item.timeSlotsDisplay?.toLowerCase().includes(querySearch);
+    return titleMatch || emailMatch || mobileMatch || timeSlotMatch;
+  });
+
+  setFilteredRiders(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
   const handleDelete = async (id) => {
     const success = await DeleteEntity("Rider", id);

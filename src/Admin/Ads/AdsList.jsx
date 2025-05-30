@@ -80,20 +80,36 @@ const AdsList = () => {
   }, [showModal]);
 
   const handleSearch = (event) => {
-    const querySearch = event.target.value.toLowerCase();
-    const filteredData = ads.filter((item) =>
-      Object.values(item).some((value) =>
-        typeof value === "object" && value !== null
-          ? Object.values(value).some((nestedValue) =>
-              String(nestedValue).toLowerCase().includes(querySearch)
-            )
-          : String(value).toLowerCase().includes(querySearch)
-      )
+  const querySearch = event.target.value.toLowerCase();
+
+  const filteredData = ads.filter((ad) => {
+    const screenNameMatch = ad.screenName?.toLowerCase().includes(querySearch);
+    const planTypeMatch = ad.planType?.toLowerCase().includes(querySearch);
+    const startDateMatch = formatDateTime(ad.startDateTime)
+      .toLowerCase()
+      .includes(querySearch);
+    const endDateMatch = formatDateTime(ad.endDateTime)
+      .toLowerCase()
+      .includes(querySearch);
+    const statusMatch =
+      (ad.status === 1 ? "published" : "unpublished")
+        .toLowerCase()
+        .includes(querySearch);
+
+    return (
+      screenNameMatch ||
+      planTypeMatch ||
+      startDateMatch ||
+      endDateMatch ||
+      statusMatch
     );
-    setFilteredAds(filteredData);
-    setPage(1);
-    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-  };
+  });
+
+  setFilteredAds(filteredData);
+  setPage(1);
+  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+};
+
 
    const handleDelete = async (id) => {
     const success = await DeleteEntity("Ads", id);
@@ -194,9 +210,9 @@ const AdsList = () => {
     });
   };
 
-  const columns = ["S.No.", "Ad Image", "Screen Name", "Plan Type", "Status", "Start Date", "End Date"];
+  const columns = ["S.No.", "Ad Image", "Screen Name", "Plan Type", "Start Date", "End Date","Status"];
 
-  const fields = ["index", "image", "screenName", "planType", "status", "startDateTime", "endDateTime"];
+  const fields = ["index", "image", "screenName", "planType", "startDateTime", "endDateTime","status"];
 
   const tableData = filteredAds
     .slice((page - 1) * itemsPerPage, page * itemsPerPage)

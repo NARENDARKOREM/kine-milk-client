@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import api from '../../../utils/api';
 import { NotificationManager } from 'react-notifications';
@@ -12,47 +12,73 @@ const PaymentReportsTableByStore = ({ reportType = 'normal', searchTerm, fromDat
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
   const [debouncedSearch] = useDebounce(searchTerm, 500);
   const store_id = Cookies.get('store_id');
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   useEffect(() => {
     if (store_id) {
       fetchPayments();
     } else {
+      NotificationManager.removeAll()
       NotificationManager.error('Store ID not found in cookies');
     }
-  }, [debouncedSearch, fromDate, toDate, currentPage, store_id]);
+  }, [fromDate, toDate, currentPage, store_id]);
 
   const fetchPayments = async () => {
     setIsLoading(true);
     try {
       const endpoint = reportType === 'normal' ? 'normal-payments-by-store' : 'subscribe-payments-by-store';
-      const response = await api.get(`/payments/${endpoint}`, {
-        params: {
-          store_id,
-          search: debouncedSearch,
-          fromDate,
-          toDate,
-          page: currentPage,
-          limit: itemsPerPage,
-        },
-      });
+      const params = {
+        store_id,
+        fromDate,
+        toDate,
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+      if (reportType === 'normal') {
+        params.search = debouncedSearch; // Keep search for normal payments
+      }
+      const response = await api.get(`/payments/${endpoint}`, { params });
       const { payments, total } = response.data;
       setPayments(payments || []);
       setTotalItems(total || 0);
     } catch (error) {
       console.error(`Error fetching ${reportType} payments:`, error.response || error);
+      NotificationManager.removeAll()
       NotificationManager.error(`Failed to fetch ${reportType} payments.`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const filteredPayments = useMemo(() => {
+    if (reportType !== 'subscribe' || !debouncedSearch) {
+      return payments;
+    }
+    const searchLower = debouncedSearch.toLowerCase();
+    return payments.filter(payment =>
+      [
+        payment.order_id || '',
+        new Date(payment.order_date).toLocaleDateString() || '',
+        payment.end_date ? new Date(payment.end_date).toLocaleDateString() : '',
+        payment.username || '',
+        payment.store_name || '',
+        String(payment.delivery_charge || 0),
+        String(payment.coupon_amount || 0),
+        String(payment.tax || 0),
+        String(payment.subtotal || 0),
+        String(payment.total_amount || 0),
+        payment.transaction_id || '',
+      ].some(field => field.toLowerCase().includes(searchLower))
+    );
+  }, [payments, debouncedSearch, reportType]);
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
   const downloadCSV = (data, filename) => {
     if (!data.length) {
+      NotificationManager.removeAll()
       NotificationManager.error('No data selected for download!');
       return;
     }
@@ -101,31 +127,12 @@ const PaymentReportsTableByStore = ({ reportType = 'normal', searchTerm, fromDat
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    NotificationManager.removeAll()
     NotificationManager.success('Download successful!');
   };
 
   const handleSingleDownload = (payment) => {
     downloadCSV([payment], `${reportType}_payment_${payment.order_id}.csv`);
-  };
-
-  const handleSelectAll = (event) => {
-    if (event.target.checked) {
-      const allItems = payments.map(payment => payment.order_id);
-      setSelectedItems(prev => [...new Set([...prev, ...allItems])]);
-    } else {
-      const remainingItems = selectedItems.filter(
-        id => !payments.some(payment => payment.order_id === id)
-      );
-      setSelectedItems(remainingItems);
-    }
-  };
-
-  const handleSelectItem = (event, orderId) => {
-    if (event.target.checked) {
-      setSelectedItems(prev => [...prev, orderId]);
-    } else {
-      setSelectedItems(prev => prev.filter(id => id !== orderId));
-    }
   };
 
   const handleNext = () => {
@@ -160,15 +167,6 @@ const PaymentReportsTableByStore = ({ reportType = 'normal', searchTerm, fromDat
           <table className="text-sm min-w-full table-auto">
             <thead className="text-[12px]">
               <tr className="border-b-[1px] border-[#F3E6F2]">
-                {/* <th className="p-2 text-center">
-                  <input
-                    type="checkbox"
-                    className="cursor-pointer"
-                    onChange={handleSelectAll}
-                    checked={payments.length > 0 && payments.every(payment => selectedItems.includes(payment.order_id))}
-                    aria-label="Select All"
-                  />
-                </th> */}
                 <th className="p-2 text-center font-medium">S.No.</th>
                 {columns.map((column, index) => (
                   <th
@@ -186,33 +184,24 @@ const PaymentReportsTableByStore = ({ reportType = 'normal', searchTerm, fromDat
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={columns.length + 2}
+                    colSpan={columns.length + 1}
                     className="p-2 text-center text-[12px] font-medium text-gray-500"
                   >
                     Loading...
                   </td>
                 </tr>
-              ) : payments.length === 0 ? (
+              ) : filteredPayments.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={columns.length + 2}
+                    colSpan={columns.length + 1}
                     className="p-2 text-center text-[12px] font-medium text-gray-500"
                   >
                     No Data available
                   </td>
                 </tr>
               ) : (
-                payments.map((payment, index) => (
+                filteredPayments.map((payment, index) => (
                   <tr key={payment.order_id} className="border-b-[1px] border-[#F3E6F2]">
-                    {/* <td className="p-2 text-center">
-                      <input
-                        type="checkbox"
-                        className="cursor-pointer"
-                        onChange={e => handleSelectItem(e, payment.order_id)}
-                        checked={selectedItems.includes(payment.order_id)}
-                        aria-label={`Select Row ${index + 1}`}
-                      />
-                    </td> */}
                     <td className="p-2 text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td className="p-2 text-left text-[12px] font-medium text-gray-500" style={{ minWidth: '120px' }}>
                       {payment.order_id || '-'}

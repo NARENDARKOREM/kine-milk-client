@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import Header from '../../../common/Header';
 import ReportsTitle from '../../../Reports/ReportsTitle';
 import OrderReportsTableByStore from './OrderReportsTableByStore';
-import api from "../../../utils/api";
+import api from '../../../utils/api';
 import Cookies from 'js-cookie';
-
+import { NotificationContainer, NotificationManager } from "react-notifications";
 const NormalOrderReportsByStore = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm ] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const reportType = 'normal';
 
   const handleSearch = (e) => setSearchTerm(e.target.value);
-  const handleFromDateChange = (e) => setFromDate(e.target.value);
-  const handleToDateChange = (e) => setToDate(e.target.value);
+    const handleFromDateChange = (e) => setFromDate(e.target.value);
+    const handleToDateChange = (e) => setToDate(e.target.value);
 
   const handleDownloadAll = async () => {
     try {
@@ -21,7 +21,7 @@ const NormalOrderReportsByStore = () => {
       if (!store_id) {
         throw new Error('Store ID not found in cookies');
       }
-      const response = await api.get('/orders/normal-orders-by-store/download', {
+      const response = await api.get('/orders/orders/normal-orders-by-store/download', {
         params: { store_id, fromDate, toDate },
         responseType: 'blob',
       });
@@ -32,8 +32,13 @@ const NormalOrderReportsByStore = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      NotificationManager.removeAll()
+      NotificationManager.success('Download successful');
     } catch (error) {
       console.error('Error downloading all normal orders:', error);
+      NotificationManager.removeAll()
+      NotificationManager.error('Failed to download all orders.');
     }
   };
 

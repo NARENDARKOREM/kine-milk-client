@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import MilkLoader from "../utils/MilkLoader";
 import Header from "../common/Header";
@@ -8,9 +8,11 @@ import { ReactComponent as LeftArrow } from "../assets/images/Left Arrow.svg";
 import { ReactComponent as RightArrow } from "../assets/images/Right Arrow.svg";
 import { ReactComponent as Download } from "../assets/images/Download.svg";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+
 const StockReports = () => {
   const navigate = useNavigate();
   const [stores, setStores] = useState([]);
+  const [filteredStores, setFilteredStores] = useState([]);
   const [expandedStore, setExpandedStore] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -21,17 +23,56 @@ const StockReports = () => {
 
   useEffect(() => {
     fetchStockReports();
-  }, [debouncedSearch]);
+  }, []);
+
+  useEffect(() => {
+    // Filter stores and products locally based on searchTerm
+    const lowerSearchTerm = debouncedSearch.toLowerCase();
+    const filtered = stores
+      .map((store) => {
+        const matchesStore = store.title.toLowerCase().includes(lowerSearchTerm);
+
+        const filteredCategories = store.categories
+          .map((category) => {
+            const filteredProducts = category.products.filter((product) => {
+              const matchesProduct = product.title.toLowerCase().includes(lowerSearchTerm);
+              const matchesQuantity = product.weightDetails.some(
+                (weight) =>
+                  String(weight.instant_quantity).includes(lowerSearchTerm) ||
+                  String(weight.subscription_quantity).includes(lowerSearchTerm)
+              );
+              const matchesDate = product.lastUpdated
+                ? new Date(product.lastUpdated).toLocaleDateString().includes(lowerSearchTerm)
+                : false;
+
+              return matchesProduct || matchesQuantity || matchesDate;
+            });
+
+            return {
+              ...category,
+              products: filteredProducts,
+            };
+          })
+          .filter((category) => category.products.length > 0);
+
+        return {
+          ...store,
+          categories: filteredCategories,
+        };
+      })
+      .filter((store) => store.title.toLowerCase().includes(lowerSearchTerm) || store.categories.length > 0);
+
+    setFilteredStores(filtered);
+    setCurrentPage(1);
+  }, [debouncedSearch, stores]);
 
   const fetchStockReports = async () => {
     setIsLoading(true);
     setShowLoader(true);
     try {
-      const response = await api.get("/stock-reports", {
-        params: { search: debouncedSearch },
-      });
+      const response = await api.get("/stock-reports");
       setStores(response.data.stores || []);
-      setCurrentPage(1);
+      setFilteredStores(response.data.stores || []);
     } catch (error) {
       console.error("Error fetching stock reports:", error);
     } finally {
@@ -80,8 +121,8 @@ const StockReports = () => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentStores = stores.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(stores.length / itemsPerPage);
+  const currentStores = filteredStores.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredStores.length / itemsPerPage);
 
   const handlePrevious = () => {
     if (currentPage > 1) {
@@ -96,7 +137,7 @@ const StockReports = () => {
   };
 
   const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, stores.length);
+  const endItem = Math.min(currentPage * itemsPerPage, filteredStores.length);
 
   return (
     <div className="min-h-screen bg-[#f7fbff]">
@@ -115,7 +156,7 @@ const StockReports = () => {
         <div className="flex items-center gap-4">
           <input
             type="text"
-            placeholder="Search stores..."
+            placeholder="Search stores, products, quantities, dates..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="border border-gray-300 rounded-lg p-2 w-64 focus:outline-none focus:ring-2 focus:ring-[#393185]"
@@ -139,7 +180,7 @@ const StockReports = () => {
               <tr className="border-b-[1px] border-[#F3E6F2] bg-white">
                 <th className="p-2 font-medium text-left">Store Name</th>
                 <th className="p-2 font-medium text-left">Total Products</th>
-                <th className="p-2 font-medium text-left">Total Stock</th>
+                <th className="p-2 font-medium text-left">Instant + Subscription Quantity</th>
                 <th className="p-2 font-medium text-center">Action</th>
               </tr>
             </thead>
@@ -205,10 +246,13 @@ const StockReports = () => {
                                             Weight
                                           </th>
                                           <th className="p-2 font-medium text-left">
-                                            Stock Quantity
+                                            Instant Quantity
                                           </th>
                                           <th className="p-2 font-medium text-left">
-                                            Total Stock
+                                            Subscription Quantity
+                                          </th>
+                                          <th className="p-2 font-medium text-left">
+                                            Instant + Subscription Quantity
                                           </th>
                                           <th className="p-2 font-medium text-left">
                                             Last Updated
@@ -244,7 +288,12 @@ const StockReports = () => {
                                                         {weight.weight || "N/A"}
                                                       </td>
                                                       <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
-                                                        {weight.quantity || 0}
+                                                        {weight.instant_quantity ||
+                                                          0}
+                                                      </td>
+                                                      <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                                                        {weight.subscription_quantity ||
+                                                          0}
                                                       </td>
                                                       {index === 0 && (
                                                         <td
@@ -289,6 +338,9 @@ const StockReports = () => {
                                                     0
                                                   </td>
                                                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                                                    0
+                                                  </td>
+                                                  <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
                                                     {product.stock || 0}
                                                   </td>
                                                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
@@ -305,7 +357,7 @@ const StockReports = () => {
                                         ) : (
                                           <tr>
                                             <td
-                                              colSpan="5"
+                                              colSpan="6"
                                               className="p-2 text-center text-[12px] font-medium text-[#4D5D6B]"
                                             >
                                               No products available in this
@@ -335,21 +387,24 @@ const StockReports = () => {
                     colSpan="4"
                     className="p-2 text-center text-[12px] font-medium text-[#4D5D6B]"
                   >
-                    No stores available
+                    {debouncedSearch
+                      ? "No stores or products match the search"
+                      : "No stores available"}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
 
-          {stores.length > 0 && (
+          {filteredStores.length > 0 && (
             <div className="flex items-center justify-between mt-4 flex-wrap gap-4 px-4">
               <div className="text-[#71717A] font-medium text-[12px]">
                 Showing{" "}
                 <span className="text-black">
                   {startItem}-{endItem}
                 </span>{" "}
-                of <span className="text-black">{stores.length}</span> items
+                of <span className="text-black">{filteredStores.length}</span>{" "}
+                items
               </div>
               <div className="flex items-center font-medium text-[12px] gap-4">
                 <button
