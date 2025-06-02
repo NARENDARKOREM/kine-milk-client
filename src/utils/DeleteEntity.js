@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 export const DeleteEntity = async (entity, id) => {
   // const BASE_URL = `http://localhost:5001`;
   // const BASE_URL= "https://kine-server-dev.vercel.app"
-  const BASE_URL= "https://kine-milk-server-five.vercel.app/"
+  const BASE_URL= "https://kine-milk-server-five.vercel.app"
   const token = Cookies.get("u_token");
 
   // Common headers for authentication
