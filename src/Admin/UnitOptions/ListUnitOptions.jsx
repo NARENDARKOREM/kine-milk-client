@@ -85,9 +85,11 @@ const ListUnitOptions = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity('Unit', id, currentStatus, setFilteredUnits, filteredUnits, field);
+      NotificationManager.removeAll();
       NotificationManager.success('Unit status updated successfully', 'Success');
     } catch (error) {
       console.error('Error toggling unit status:', error);
+      NotificationManager.removeAll();
       NotificationManager.error('Failed to toggle unit status', 'Error');
     }
   };
