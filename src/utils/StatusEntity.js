@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 // const api = "http://localhost:5001";
 // const api = "https://kine-server-dev.vercel.app"
-const api = "https://kine-milk-server-five.vercel.app"
+const api = "https://kine-milk-server-six.vercel.app"
 
 export const StatusEntity = async (
   entityType,

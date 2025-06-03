@@ -54,16 +54,16 @@ const DashboardCard = () => {
 
   // Define the card details for each section with respective icons
   const cards = [
-    { key: "banners", title: "BANNERS", icon: <FaImages className="text-[#393185] text-3xl" /> },
-    { key: "categories", title: "CATEGORIES", icon: <FaTags className="text-[#393185] text-3xl" /> },
-    { key: "products", title: "PRODUCTS", icon: <FaShoppingCart className="text-[#393185] text-3xl" /> },
-    { key: "productImages", title: "PRODUCT IMAGES", icon: <FaClipboardList className="text-[#393185] text-3xl" /> },
-    { key: "coupons", title: "COUPONS", icon: <FaTicketAlt className="text-[#393185] text-3xl" /> },
+    { key: "banners", title: "Banners", icon: <FaImages className="text-[#393185] text-3xl" /> },
+    { key: "categories", title: "Categories", icon: <FaTags className="text-[#393185] text-3xl" /> },
+    { key: "products", title: "Products", icon: <FaShoppingCart className="text-[#393185] text-3xl" /> },
+    { key: "productImages", title: "Product Images", icon: <FaClipboardList className="text-[#393185] text-3xl" /> },
+    { key: "coupons", title: "Coupons", icon: <FaTicketAlt className="text-[#393185] text-3xl" /> },
     { key: "faqs", title: "FAQs", icon: <FaQuestionCircle className="text-[#393185] text-3xl" /> },
-    { key: "stores", title: "STORES", icon: <FaStore className="text-[#393185] text-3xl" /> },
-    { key: "admins", title: "ADMINS", icon: <FaUserShield className="text-[#393185] text-3xl" /> },
-    { key: "users", title: "USERS", icon: <FaUsers className="text-[#393185] text-3xl" /> },
-    { key: "totalRecords", title: "TOTAL RECORDS", icon: <FaDatabase className="text-[#393185] text-3xl" /> },
+    { key: "stores", title: "Stores", icon: <FaStore className="text-[#393185] text-3xl" /> },
+    { key: "admins", title: "Admins", icon: <FaUserShield className="text-[#393185] text-3xl" /> },
+    { key: "users", title: "Users", icon: <FaUsers className="text-[#393185] text-3xl" /> },
+    // { key: "totalRecords", title: "TOTAL RECORDS", icon: <FaDatabase className="text-[#393185] text-3xl" /> },
   ];
 
   

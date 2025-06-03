@@ -116,7 +116,7 @@ const ProductImagesList = () => {
         setAllImages(updatedImages);
         setFilteredImages(updatedImages);
         setTotalPages(Math.ceil(updatedImages.length / itemsPerPage));
-        NotificationManager.success("Image deleted successfully!", "Success", 3000);
+        // NotificationManager.success("Image deleted successfully!", "Success", 3000);
       } else {
         throw new Error("Failed to delete");
       }
@@ -129,7 +129,7 @@ const ProductImagesList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity("productImage", id, currentStatus, setFilteredImages, filteredImages, field);
-      NotificationManager.success("Status updated successfully!", "Success", 3000);
+      // NotificationManager.success("Status updated successfully!", "Success", 3000);
     } catch (error) {
       console.error("Error toggling image status:", error);
       NotificationManager.error("Failed to update status", "Error", 3000);

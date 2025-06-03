@@ -132,49 +132,46 @@ const RiderTimeslotAdd = () => {
   };
 
   const customStyles = {
-    control: (base, { isFocused }) => ({
-      ...base,
-      border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
-      boxShadow: "none",
-      borderRadius: "5px",
-      padding: "0 8px",
-      fontSize: "12px",
-      height: "42px",
-      display: "flex",
-      alignItems: "center",
-      transition: "border-color 0.2s ease-in-out",
-      "&:hover": {
-        border: "2px solid #393185",
-      },
-    }),
-    option: (base, { isFocused, isSelected }) => ({
-      ...base,
-      backgroundColor: isFocused ? "#393185" : isSelected ? "#393185" : "white",
-      color: isFocused || isSelected ? "white" : "#757575",
-      fontSize: "12px",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      fontSize: "12px",
-      fontWeight: "600",
-      color: "#393185",
-      display: "flex",
-      alignItems: "center",
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "#393185",
-      fontSize: "12px",
-      display: "flex",
-      alignItems: "center",
-    }),
-    valueContainer: (base) => ({
-      ...base,
-      padding: "0",
-      display: "flex",
-      alignItems: "center",
-    }),
-  };
+  control: (base, { isFocused }) => ({
+    ...base,
+    border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
+    boxShadow: "none",
+    borderRadius: "5px",
+    padding: "0px",
+    fontSize: "12px",
+    height: "42px",
+    transition: "border-color 0.2s ease-in-out",
+    "&:hover": {
+      border: "2px solid #393185",
+    },
+    zIndex: 1,
+  }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 10001,
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 10001,
+  }),
+  option: (base, { isFocused, isSelected }) => ({
+    ...base,
+    backgroundColor: isSelected ? "#B0B0B0" : isFocused ? "#393185" : "white",
+    color: isSelected ? "white" : isFocused ? "white" : "#757575",
+    fontSize: "12px",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#393185",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "#393185",
+    fontSize: "12px",
+  }),
+};
 
   const statusOptions = [
     { value: "1", label: "Publish" },
