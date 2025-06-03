@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 const api = axios.create({
   // baseURL: "http://localhost:5001",
   // baseURL: "https://kine-server-dev.vercel.app",
-  baseURL: "https://kine-milk-server-five.vercel.app",
+  baseURL: "https://kine-milk-server-six.vercel.app",
   withCredentials: true,
 });
 

@@ -326,34 +326,47 @@ const [isSubmitting,setIsSubmitting] = useState(false)
     setIsSubmitting(false)
   };
 
-  const customStyles = {
-    control: (base, { isFocused }) => ({
-      ...base,
-      border: `${isFocused ? "2px solid #393185" : "1px solid #B0B0B0"}`,
-      boxShadow: isFocused ? "none" : "none",
-      borderRadius: "5px",
-      padding: "0px",
-      fontSize: "12px",
-      height: "42px",
-      transition: "border-color 0.2s ease-in-out",
-      "&:hover": {
-        border: "2px solid #393185",
-      },
-    }),
-    option: (base, { isFocused, isSelected }) => ({
-      ...base,
-      backgroundColor: isFocused ? "#393185" : isSelected ? "#393185" : "white",
-      color: isFocused || isSelected ? "white" : "#757575",
-      fontSize: "12px",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      fontSize: "12px",
-      fontWeight: "600",
-      color: "#393185",
-    }),
-    placeholder: (base) => ({ ...base, color: "#393185", fontSize: "12px" }),
-  };
+   const customStyles = {
+  control: (base, { isFocused }) => ({
+    ...base,
+    border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
+    boxShadow: "none",
+    borderRadius: "5px",
+    padding: "0px",
+    fontSize: "12px",
+    height: "42px",
+    transition: "border-color 0.2s ease-in-out",
+    "&:hover": {
+      border: "2px solid #393185",
+    },
+    zIndex: 1,
+  }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 10001,
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 10001,
+  }),
+  option: (base, { isFocused, isSelected }) => ({
+    ...base,
+    backgroundColor: isSelected ? "#B0B0B0" : isFocused ? "#393185" : "white",
+    color: isSelected ? "white" : isFocused ? "white" : "#757575",
+    fontSize: "12px",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#393185",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "#393185",
+    fontSize: "12px",
+  }),
+};
 
   const statusOptions = [
     { value: "1", label: "Publish" },

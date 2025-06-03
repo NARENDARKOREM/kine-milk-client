@@ -176,67 +176,46 @@ const RiderAdd = () => {
   };
 
   const customStyles = {
-    control: (base, { isFocused }) => ({
-      ...base,
-      border: `${isFocused ? "2px solid #393185" : "1px solid #B0B0B0"}`,
-      boxShadow: isFocused ? "none" : "none",
-      borderRadius: "5px",
-      padding: "3px 7px", // Increased padding for better cursor placement
-      fontSize: "12px",
-      minHeight: "42px", // Ensures consistent height
-      transition: "border-color 0.2s ease-in-out",
-      "&:hover": {
-        border: "2px solid #393185",
-      },
-    }),
-    option: (base, { isFocused, isSelected }) => ({
-      ...base,
-      backgroundColor: isFocused ? "#393185" : isSelected ? "#393185" : "white",
-      color: isFocused || isSelected ? "white" : "#757575",
-      fontSize: "12px",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      fontSize: "12px",
-      fontWeight: "600",
-      color: "#393185",
-    }),
-    multiValue: (base) => ({
-      ...base,
-      backgroundColor: "#e0e7ff",
-      borderRadius: "4px",
-      margin: "2px", // Added margin to prevent overlap
-    }),
-    multiValueLabel: (base) => ({
-      ...base,
-      color: "#393185",
-      fontSize: "12px",
-      padding: "2px 6px", // Adjusted padding for better text alignment
-    }),
-    multiValueRemove: (base) => ({
-      ...base,
-      color: "#393185",
-      padding: "2px 4px", // Adjusted padding for remove button
-      ":hover": {
-        backgroundColor: "#c7d2fe",
-        color: "#1e3a8a",
-      },
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "#393185",
-      fontSize: "12px",
-    }),
-    input: (base) => ({
-      ...base,
-      padding: "0", // Ensure input padding doesn't interfere
-      margin: "0", // Remove default margins
-    }),
-    valueContainer: (base) => ({
-      ...base,
-      padding: "0 4px", // Adjust value container padding
-    }),
-  };
+  control: (base, { isFocused }) => ({
+    ...base,
+    border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
+    boxShadow: "none",
+    borderRadius: "5px",
+    padding: "0px",
+    fontSize: "12px",
+    height: "42px",
+    transition: "border-color 0.2s ease-in-out",
+    "&:hover": {
+      border: "2px solid #393185",
+    },
+    zIndex: 1,
+  }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 10001,
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 10001,
+  }),
+  option: (base, { isFocused, isSelected }) => ({
+    ...base,
+    backgroundColor: isSelected ? "#B0B0B0" : isFocused ? "#393185" : "white",
+    color: isSelected ? "white" : isFocused ? "white" : "#757575",
+    fontSize: "12px",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#393185",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "#393185",
+    fontSize: "12px",
+  }),
+};
 
   const statusOptions = [
     { value: "1", label: "Publish" },
