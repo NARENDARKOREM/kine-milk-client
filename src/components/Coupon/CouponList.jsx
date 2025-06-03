@@ -33,7 +33,17 @@ const CouponList = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return isNaN(date) ? "N/A" : date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+    if (isNaN(date.getTime())) return "N/A";
+
+    // Dates are already in IST, just format them
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   useEffect(() => {
@@ -44,8 +54,10 @@ const CouponList = () => {
         const response = await api.get("/coupon/all");
         const formattedCoupons = (response.data || []).map((couponItem) => ({
           ...couponItem,
-          start_date: formatDate(couponItem.start_date),
-          end_date: formatDate(couponItem.end_date),
+          display_start_date: formatDate(couponItem.start_date),
+          display_end_date: formatDate(couponItem.end_date),
+          raw_start_date: couponItem.start_date ? new Date(couponItem.start_date) : null,
+          raw_end_date: couponItem.end_date ? new Date(couponItem.end_date) : null,
         }));
         setCoupon(formattedCoupons);
         setFilteredCoupon(formattedCoupons);
@@ -83,29 +95,28 @@ const CouponList = () => {
     return () => (document.body.style.overflow = "auto");
   }, [isModalOpen]);
 
- const handleSearch = (event) => {
-  const querySearch = event.target.value.toLowerCase();
+  const handleSearch = (event) => {
+    const querySearch = event.target.value.toLowerCase();
 
-  const filteredData = coupon.filter((item) => {
-    const statusText = item.status === 1 ? "published" : "unpublished";
+    const filteredData = coupon.filter((item) => {
+      const statusText = item.status === 1 ? "published" : "unpublished";
 
-    return (
-      String(item.coupon_title || "").toLowerCase().includes(querySearch) ||
-      String(item.subtitle || "").toLowerCase().includes(querySearch) ||
-      String(item.coupon_code || "").toLowerCase().includes(querySearch) ||
-      String(item.start_date || "").toLowerCase().includes(querySearch) ||
-      String(item.end_date || "").toLowerCase().includes(querySearch) ||
-      String(item.min_amt || "").toLowerCase().includes(querySearch) ||
-      String(item.coupon_val || "").toLowerCase().includes(querySearch) ||
-      statusText.includes(querySearch)
-    );
-  });
+      return (
+        String(item.coupon_title || "").toLowerCase().includes(querySearch) ||
+        String(item.subtitle || "").toLowerCase().includes(querySearch) ||
+        String(item.coupon_code || "").toLowerCase().includes(querySearch) ||
+        String(item.display_start_date || "").toLowerCase().includes(querySearch) ||
+        String(item.display_end_date || "").toLowerCase().includes(querySearch) ||
+        String(item.min_amt || "").toLowerCase().includes(querySearch) ||
+        String(item.coupon_val || "").toLowerCase().includes(querySearch) ||
+        statusText.includes(querySearch)
+      );
+    });
 
-  setFilteredCoupon(filteredData);
-  setPage(1);
-  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-};
-
+    setFilteredCoupon(filteredData);
+    setPage(1);
+    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+  };
 
   const sortData = (key) => {
     handleSort(filteredCoupon, key, sortConfig, setSortConfig, setFilteredCoupon);
@@ -133,7 +144,6 @@ const CouponList = () => {
         setFilteredCoupon(updatedCoupons);
         setTotalPages(Math.ceil(updatedCoupons.length / itemsPerPage));
         NotificationManager.removeAll();
-        // NotificationManager.success("Coupon deleted successfully", "Success", 3000);
       } else {
         throw new Error("Failed to delete");
       }
@@ -151,7 +161,6 @@ const CouponList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity("Coupon", id, currentStatus, setFilteredCoupon, filteredCoupon, field);
-      // NotificationManager.success("Coupon status updated successfully", "Success", 3000);
     } catch (error) {
       console.error("Error toggling coupon status:", error);
       NotificationManager.removeAll();
@@ -189,15 +198,20 @@ const CouponList = () => {
     />
   );
 
-  const renderStatus = (status, id) => {
+  const renderStatus = (status, id, rawStartDate, rawEndDate) => {
     let statusLabel = status === 1 ? "Published" : "Unpublished";
+    const now = new Date();
+    const isStartDateFuture = rawStartDate && rawStartDate > now;
+    const isEndDatePassed = rawEndDate && rawEndDate <= now;
+    const isToggleDisabled = (isStartDateFuture || isEndDatePassed) && status === 0;
+
     return (
       <div className="flex items-center">
         <FontAwesomeIcon
-          className="h-7 w-16 cursor-pointer"
+          className={`h-7 w-16 ${isToggleDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           style={{ color: status === 1 ? "#0064DC" : "#e9ecef" }}
           icon={status === 1 ? faToggleOn : faToggleOff}
-          onClick={() => handleToggleChange(id, status, "status")}
+          onClick={isToggleDisabled ? null : () => handleToggleChange(id, status, "status")}
         />
         <span className="ml-2 text-sm">{statusLabel}</span>
       </div>
@@ -223,8 +237,8 @@ const CouponList = () => {
     "coupon_title",
     "subtitle",
     "coupon_code",
-    "start_date",
-    "end_date",
+    "display_start_date",
+    "display_end_date",
     "min_amt",
     "coupon_val",
     "status",
@@ -239,11 +253,11 @@ const CouponList = () => {
       coupon_title: coupon.coupon_title || "N/A",
       subtitle: coupon.subtitle || "N/A",
       coupon_code: coupon.coupon_code || "N/A",
-      start_date: coupon.start_date || "N/A",
-      end_date: coupon.end_date || "N/A",
+      display_start_date: coupon.display_start_date || "N/A",
+      display_end_date: coupon.display_end_date || "N/A",
       min_amt: coupon.min_amt || "N/A",
       coupon_val: coupon.coupon_val || "N/A",
-      status: renderStatus(coupon.status, coupon.id),
+      status: renderStatus(coupon.status, coupon.id, coupon.raw_start_date, coupon.raw_end_date),
     }));
 
   return (
