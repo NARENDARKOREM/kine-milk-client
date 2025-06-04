@@ -183,22 +183,24 @@ const ProductList = () => {
     "S.No.",
     "Product Name",
     "Product Image",
-    "Status",
+    
     "Discount",
     "MRP Price",
     "Instant Price",
     "Out of Stock",
+    "Status",
   ];
 
   const fields = [
     "index",
     "title",
     "image",
-    "status",
+    
     "discount",
     "mrp_price",
     "normal_price",
     "out_of_stock",
+    "status",
   ];
 
   const tableData = filteredProduct

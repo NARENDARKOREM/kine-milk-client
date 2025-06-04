@@ -269,7 +269,7 @@ const AdsAdd = () => {
             <div className="flex flex-col w-full gap-y-4">
               <div className="flex flex-col w-full">
                 <label className="block text-left text-sm font-medium mb-1">
-                  Ad Image
+                  Ad Image<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="file"
@@ -297,7 +297,7 @@ const AdsAdd = () => {
               <div className="flex flex-row gap-x-4">
                 <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    Screen Name
+                    Screen Name<span className="text-red-500">*</span>
                   </label>
                   <Select
                     value={screenNameOptions.find(
@@ -326,7 +326,7 @@ const AdsAdd = () => {
 
                 <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    Plan Type
+                    Plan Type<span className="text-red-500">*</span>
                   </label>
                   <Select
                     value={planTypeOptions.find(
@@ -355,7 +355,7 @@ const AdsAdd = () => {
               <div className="flex flex-row gap-x-4">
                 <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    Status
+                    Status<span className="text-red-500">*</span>
                   </label>
                   <Select
                     value={statusOptions.find(

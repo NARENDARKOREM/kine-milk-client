@@ -180,7 +180,7 @@ const UsersList = () => {
                       />
                     </div>
                   </th>
-                  <th className="p-2 font-medium text-left">
+                  {/* <th className="p-2 font-medium text-left">
                     Status
                     <div className="inline-flex items-center ml-2">
                       <GoArrowUp
@@ -192,7 +192,7 @@ const UsersList = () => {
                         onClick={() => sortData("status")}
                       />
                     </div>
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody>
@@ -224,7 +224,7 @@ const UsersList = () => {
                           ? user.registartion_date.split("T")[0]
                           : "N/A"}
                       </td>
-                      <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                      {/* <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
                         <FontAwesomeIcon
                           className="w-5 h-5 cursor-pointer"
                           style={{
@@ -234,7 +234,7 @@ const UsersList = () => {
                           onClick={() => handleToggleChange(user.id, user.status)}
                           aria-label={`Toggle status for user ${user.id}`}
                         />
-                      </td>
+                      </td> */}
                     </tr>
                   ))
                 ) : (

@@ -200,7 +200,7 @@ const CarryBagAdd = () => {
             <div className="flex flex-col w-full gap-y-4">
               <div className="flex flex-col w-full">
                 <label className="block text-left text-sm font-medium mb-1">
-                  Bag Image
+                  Bag Image<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="file"
@@ -231,7 +231,7 @@ const CarryBagAdd = () => {
               <div className="flex flex-row gap-x-4">
                 <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    Plan Type
+                    Plan Type<span className="text-red-500">*</span>
                   </label>
                   <Select
                     value={planTypeOptions.find(
@@ -257,7 +257,7 @@ const CarryBagAdd = () => {
 
                 <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    Status
+                    Status<span className="text-red-500">*</span>
                   </label>
                   <Select
                     value={statusOptions.find(

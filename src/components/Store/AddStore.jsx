@@ -406,7 +406,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Store Name *
+                    Store Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -424,7 +424,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Store Logo *
+                    Store Logo <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
@@ -449,7 +449,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Store Cover Image *
+                    Store Cover Image <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
@@ -477,7 +477,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Status *
+                    Status <span className="text-red-500">*</span>
                   </label>
                   <Select
                     value={statusOptions.find(
@@ -503,7 +503,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Rating *
+                    Rating <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -534,7 +534,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Certificate/License Code *
+                    Certificate/License Code <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -555,7 +555,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Mobile Number *
+                    Mobile Number <span className="text-red-500">*</span>
                   </label>
                   <PhoneInput
                     country={"in"}
@@ -571,7 +571,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Slogan Title *
+                    Slogan Title <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -589,7 +589,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Slogan Subtitle *
+                    Slogan Subtitle <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -609,7 +609,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Store Open Time *
+                    Store Open Time <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="time"
@@ -626,7 +626,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Store Close Time *
+                    Store Close Time <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="time"
@@ -645,7 +645,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
 
               <div className="mb-4">
                 <label className="text-left block font-medium mb-2">
-                  Tags *
+                  Tags <span className="text-red-500">*</span>
                 </label>
                 <div className="w-full border border-[#B0B0B0] rounded px-2 py-1 flex flex-wrap items-center gap-2 focus-within:border-[#393185] focus-within:ring-2 focus-within:ring-[#393185]">
                   {Array.isArray(tags) &&
@@ -678,7 +678,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
 
               <div className="mb-4 block">
                 <label className="text-left block font-medium mb-2">
-                  Short Description *
+                  Short Description <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -694,7 +694,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
 
               <div className="mb-4">
                 <label className="text-left block font-medium mb-2">
-                  Cancel Policy *
+                  Cancel Policy <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   {...register("cancle_policy", {
@@ -717,7 +717,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Email *
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -753,7 +753,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="text-left block font-medium mb-2">
-                    Owner Name *
+                    Owner Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -832,7 +832,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               </h1>
               <div>
                 <label className="block font-medium mb-1 text-left">
-                  Full Address
+                  Full Address<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -852,7 +852,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block font-medium mb-1 text-left">
-                    Pincode
+                    Pincode<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -884,7 +884,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block font-medium mb-1 text-left">
-                    Latitude
+                    Latitude<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -902,7 +902,7 @@ const [isSubmitting,setIsSubmitting] = useState(false)
                 </div>
                 <div>
                   <label className="block font-medium mb-1 text-left">
-                    Longitude
+                    Longitude<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"

@@ -101,7 +101,7 @@ const FaqList = () => {
     } catch (error) {
       console.error("Error toggling FAQ status:", error);
       NotificationManager.removeAll();
-      NotificationManager.error("Failed to update FAQ status", "Error", 3000);
+      // NotificationManager.error("Failed to update FAQ status", "Error", 3000);
     }
   };
 

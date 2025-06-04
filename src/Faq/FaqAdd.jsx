@@ -164,7 +164,7 @@ const FaqAdd = () => {
                           htmlFor="question"
                           className="text-sm font-medium text-start text-[12px] font-[Montserrat]"
                         >
-                          FAQ's Question
+                          FAQ's Question<span className="text-red-500">*</span>
                         </label>
                         <input
                           id="question"
@@ -187,7 +187,7 @@ const FaqAdd = () => {
                           htmlFor="answer"
                           className="text-sm font-medium text-start text-[12px] font-[Montserrat]"
                         >
-                          FAQ's Answer
+                          FAQ's Answer<span className="text-red-500">*</span>
                         </label>
                         <input
                           id="answer"
@@ -210,7 +210,7 @@ const FaqAdd = () => {
                           htmlFor="status"
                           className="text-sm font-medium text-start text-[12px] font-[Montserrat]"
                         >
-                          FAQ's Status
+                          FAQ's Status<span className="text-red-500">*</span>
                         </label>
                         <Select
                           value={statusOptions.find((option) => option.value === statusValue)}

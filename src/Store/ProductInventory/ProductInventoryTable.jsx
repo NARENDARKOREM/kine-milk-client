@@ -135,7 +135,7 @@ const ProductInventoryTable = ({
               <tr>
                 <td
                   colSpan={columns.length + (showActions ? 1 : 0)}
-                  className="p-2 text-center text-[12px] font-medium text-[#4D5D6B]"
+                  className="p-2 text-center text-[12px] font-medium text-[#4D5D6B] whitespace-nowrap"
                 >
                   No product inventory found for this store
                 </td>
@@ -157,13 +157,13 @@ const ProductInventoryTable = ({
                   {fields.map((field, idx) => (
                     <td
                       key={idx}
-                      className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]"
+                      className="p-2 text-left text-[12px] font-medium text-[#4D5D6B] whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]"
                     >
                       {item[field]}
                     </td>
                   ))}
                   {showActions && (
-                    <td className="p-2 text-center">
+                    <td className="p-2 text-center whitespace-nowrap">
                       <div className="flex gap-2 justify-center">
                         <Edit
                           className="w-5 h-5 text-green-500 cursor-pointer"

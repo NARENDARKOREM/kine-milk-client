@@ -247,7 +247,7 @@ const AddUnitOptions = () => {
                       />
                     </svg>
                   ) : null}
-                  {isSubmitting ? "Submitting..." : id ? "Update Weight Option" : "Add Weight Option"}
+                  {isSubmitting ? "Submitting..." : id ? "Update Weight" : "Add Weight"}
                 </button>
               </form>
             </div>

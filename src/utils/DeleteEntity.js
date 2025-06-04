@@ -10,9 +10,7 @@ export const DeleteEntity = async (entity, id) => {
   const token = Cookies.get("u_token");
 
   // Common headers for authentication
-  const headers = token
-    ? { Authorization: `Bearer ${token}` }
-    : {};
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   try {
     const result = await Swal.fire({
@@ -30,7 +28,7 @@ export const DeleteEntity = async (entity, id) => {
         productAttribute: `/product-attribute/delete/${id}`,
         Category: `/category/delete/${id}`,
         Banner: `/banner/deletebannerbyid/${id}`,
-        Illustration: `/illustration//delete-illustration/${id}`,
+        Illustration: `/illustration/delete-illustration/${id}`,
         Ads: `/ads/delete-ads/${id}`,
         CarryBag: `/carrybag/delete/${id}`,
         productimages: `/product-images/delete/${id}`,
@@ -51,7 +49,7 @@ export const DeleteEntity = async (entity, id) => {
         Role: `/rollrequest/delete/${id}?forceDelete=true`,
         Property: `/properties/delete/${id}?forceDelete=true`,
         RiderTimeSlot: `/rider-time/delete/${id}`,
-        Unit: `/units/delete/${id}`
+        Unit: `/units/delete/${id}`,
       };
 
       if (!endpoints[entity]) {
@@ -65,17 +63,16 @@ export const DeleteEntity = async (entity, id) => {
 
       NotificationManager.removeAll();
       NotificationManager.success(`${entity} deleted successfully!`);
-      return true;
+      return { success: true };
     } else {
       NotificationManager.removeAll();
-      
       NotificationManager.info(`${entity} deletion was cancelled.`);
-      return false;
+      return { success: false, cancelled: true };
     }
   } catch (error) {
-    NotificationManager.removeAll();
     console.error(error);
+    NotificationManager.removeAll();
     NotificationManager.error(`Failed to delete ${entity}.`);
-    throw error;
+    throw error; // Re-throw the error to let the caller handle it
   }
 };
