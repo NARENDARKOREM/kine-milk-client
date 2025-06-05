@@ -77,10 +77,10 @@ export const StatusEntity = async (
       case "CarryBag":
         url = `${api}/carrybag/toggle-status`;
         break;
-      case "productInventory":
+      case "product-Inventory":
         url = `${api}/productinventory/toggle-status`;
         break;
-      case "RiderTimeSlot":
+      case "Rider-Time-Slot":
         url = `${api}/rider-time/toggle-status`;
         break;
       case "Unit":

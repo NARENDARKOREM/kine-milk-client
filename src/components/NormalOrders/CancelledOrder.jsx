@@ -133,7 +133,7 @@ const CancelledOrder = () => {
         <Header />
         <InnerHeader
           onSearch={handleSearch}
-          name={"Instant Cancelled Order List"}
+          name={"Cancelled instant orders"}
         />
         <ProductInventoryTable
           columns={columns}

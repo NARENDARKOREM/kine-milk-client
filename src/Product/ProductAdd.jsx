@@ -93,6 +93,7 @@ const ProductAdd = () => {
         try {
           const response = await api.get(`/product/getbyid/${id}`);
           const fetchedData = response.data.data;
+          
           const discountValue =
             fetchedData.discount !== null && fetchedData.discount !== undefined
               ? fetchedData.discount

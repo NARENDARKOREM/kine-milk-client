@@ -100,7 +100,7 @@ const StoresList = () => {
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
+      confirmButtonColor: "#393185",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "No, cancel",
@@ -115,7 +115,7 @@ const StoresList = () => {
         setStores(updatedStores);
         setFilteredStores(updatedStores);
         setTotalPages(Math.ceil(updatedStores.length / itemsPerPage));
-        // NotificationManager.success("Store deleted successfully", "Success", 3000);
+        NotificationManager.success("Store deleted successfully", "Success", 3000);
       } else {
         throw new Error("Failed to delete");
       }

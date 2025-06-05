@@ -135,7 +135,7 @@ const SubCompletedOrder = () => {
         <Header />
         <InnerHeader
           onSearch={handleSearch}
-          name={"Subscription Completed Order List"}
+          name={"Completed subscribe orders"}
         />
         <ProductInventoryTable
           columns={columns}

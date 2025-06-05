@@ -100,7 +100,7 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
       return;
     }
     try {
-      const response = await api.get(`/orders/${reportType}-orders/single-download/${orderId}`, {
+      const response = await api.get(`/orders/${reportType}-orders/download/${orderId}`, {
         responseType: "blob",
       });
       const blob = new Blob([response.data]);
@@ -145,14 +145,19 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
               <th className="p-2 font-medium text-left">Store Name</th>
               <th className="p-2 font-medium text-left">Order Status</th>
               <th className="p-2 font-medium text-left">User Mobile No</th>
-              <th className="p-2 font-medium text-left">Timeslot</th>
+              {reportType === "subscribe" && (
+                <>
+                  <th className="p-2 font-medium text-left">Start Date</th>
+                  <th className="p-2 font-medium text-left">End Date</th>
+                </>
+              )}
               <th className="p-2 font-medium text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {showLoader ? (
               <tr>
-                <td colSpan="9" className="text-center py-2">
+                <td colSpan={reportType === "subscribe" ? 10 : 8} className="text-center py-2">
                   <div className="flex justify-center items-center h-64 w-full">
                     <MilkLoader />
                   </div>
@@ -160,7 +165,7 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
               </tr>
             ) : filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan="9" className="p-2 text-center text-[12px] font-medium text-[#4D5D6B]">
+                <td colSpan={reportType === "subscribe" ? 10 : 8} className="p-2 text-center text-[12px] font-medium text-[#4D5D6B]">
                   {storeId ? "Orders are not found for this store" : debouncedSearch ? "No orders match the search" : "No data available"}
                 </td>
               </tr>
@@ -188,9 +193,16 @@ const OrderReportsTable = ({ reportType = "normal", searchTerm, fromDate, toDate
                   <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
                     {order.user_mobile_no || "N/A"}
                   </td>
-                  <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
-                    {order.timeslot || "N/A"}
-                  </td>
+                  {reportType === "subscribe" && (
+                    <>
+                      <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                        {order.start_date ? new Date(order.start_date).toLocaleDateString() : "N/A"}
+                      </td>
+                      <td className="p-2 text-left text-[12px] font-medium text-[#4D5D6B]">
+                        {order.end_date ? new Date(order.end_date).toLocaleDateString() : "N/A"}
+                      </td>
+                    </>
+                  )}
                   <td className="p-2 text-center">
                     <div className="flex gap-2 justify-center">
                       <Download

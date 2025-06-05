@@ -136,7 +136,7 @@ const CompletedOrder = () => {
         <Header />
         <InnerHeader
           onSearch={handleSearch}
-          name={"Instant Completed Order List"}
+          name={"Completed instant orders"}
         />
         <ProductInventoryTable
           columns={columns}

@@ -231,23 +231,23 @@ const SidebarMenu = () => {
               { label: "List Rider", route: "/store/rider-list" },
             ])}
             {renderSubMenu(MoreTimeOutlinedIcon, "TimeSlot", "timeSlot", [
-              { label: "Add TimeSlot", route: "/store/add-timeslot" },
-              { label: "List TimeSlot", route: "/store/rider-timeslot" },
-              { label: "Add Rider TimeSlot", route: "/store/addrider-timeslot" },
-              { label: "Rider TimeSlots List", route: "/store/listrider-timeslot" },
+              { label: "Add Time slot", route: "/store/add-timeslot" },
+              { label: "List Time slot", route: "/store/rider-timeslot" },
+              { label: "Add Rider Time slot", route: "/store/addrider-timeslot" },
+              { label: "Rider Time slots List", route: "/store/listrider-timeslot" },
             ])}
             {renderSubMenu(ShoppingCartOutlinedIcon, "Instant Orders", "instantOrders", [
-              { label: "Pending Order", route: "/store/pending-order" },
-              { label: "Completed Order", route: "/store/completed-order" },
-              { label: "Cancelled Order", route: "/store/cancelled-order" },
+              { label: "Pending order", route: "/store/pending-order" },
+              { label: "Completed order", route: "/store/completed-order" },
+              { label: "Cancelled order", route: "/store/cancelled-order" },
             ])}
             {renderSubMenu(LocalMallOutlinedIcon, "Subscription Order", "subscriptionOrder", [
-              { label: "Pending Order", route: "/store/subpending-order" },
-              { label: "Completed Order", route: "/store/subcompleted-order" },
-              { label: "Cancelled Order", route: "/store/subcancelled-order" },
+              { label: "Pending order", route: "/store/subpending-order" },
+              { label: "Completed order", route: "/store/subcompleted-order" },
+              { label: "Cancelled order", route: "/store/subcancelled-order" },
             ])}
             {renderSubMenu(PhotoLibraryOutlinedIcon, "Reports", "reports", [
-              { label: "Deliveryboy Reports", route: "/store/InstantDeliveryboyReports" },
+              { label: "Delivery Boy Reports", route: "/store/InstantDeliveryboyReports" },
               // { label: "Subscribe Deliveryboy Reports", route: "/store/SubscriptionDeliveryboyReports" },
               { label: "Instant Order Reports", route: "/store/InstantOrderReports" },
               { label: "Subscribe Order Reports", route: "/store/SubscriptionOrderReports" },

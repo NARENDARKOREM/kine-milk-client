@@ -202,7 +202,7 @@ const RiderTimeslotAdd = () => {
                   {/* Min Time */}
                   <div className="flex flex-col">
                     <label htmlFor="mintime" className="text-sm font-medium text-start">
-                      Min Time
+                      Min Time<span className="text-red-500">*</span>
                     </label>
                     <input
                       id="mintime"
@@ -222,7 +222,7 @@ const RiderTimeslotAdd = () => {
                   {/* Max Time */}
                   <div className="flex flex-col">
                     <label htmlFor="maxtime" className="text-sm font-medium text-start">
-                      Max Time
+                      Max Time<span className="text-red-500">*</span>
                     </label>
                     <input
                       id="maxtime"
@@ -243,7 +243,7 @@ const RiderTimeslotAdd = () => {
                 {/* Status */}
                 <div className="flex flex-col mt-6">
                   <label htmlFor="status" className="text-sm font-medium text-start">
-                    Status
+                    Status<span className="text-red-500">*</span>
                   </label>
                   <Select
                     value={statusOptions.find(

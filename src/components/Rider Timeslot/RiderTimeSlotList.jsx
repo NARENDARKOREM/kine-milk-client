@@ -106,7 +106,7 @@ const RiderTimeSlotList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity(
-        "RiderTimeSlot",
+        "Rider-Time-Slot",
         id,
         currentStatus,
         setFilteredRiderTimeSlots,

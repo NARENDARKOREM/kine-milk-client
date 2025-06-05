@@ -71,6 +71,7 @@ const StoreWeightOptionList = () => {
         }
       } catch (error) {
         console.error("Error fetching weight options:", error);
+        NotificationManager.removeAll();
         NotificationManager.error("Failed to fetch weight options.");
       } finally {
         setIsLoading(false);
@@ -122,7 +123,7 @@ const StoreWeightOptionList = () => {
     "Instant Price",
     "Subscribe Price",
     "MRP Price",
-    "Quantity",
+    "Instant Quantity",
     "Subscription Quantity",
     "Total",
     "Created Date",

@@ -59,7 +59,7 @@ const Addadminheader = ({ onSearch, name }) => {
             </div>
             <button
               onClick={() => navigate("/admin/add-admin")}
-              className="bg-[#393185] text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              className="bg-[#393185] text-white px-4 py-2 rounded-lg"
             >
               Create Admin
             </button>

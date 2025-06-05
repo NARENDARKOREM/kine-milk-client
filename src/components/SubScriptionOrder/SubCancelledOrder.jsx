@@ -135,7 +135,7 @@ const SubCancelledOrder = () => {
         <Header />
         <InnerHeader
           onSearch={handleSearch}
-          name={"Subscription Cancelled Order List"}
+          name={"Cancelled subscribe orders"}
         />
         <ProductInventoryTable
           columns={columns}

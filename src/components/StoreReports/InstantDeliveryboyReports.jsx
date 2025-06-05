@@ -239,7 +239,7 @@ const CombinedDeliveryboyReports = () => {
             <table className="text-sm min-w-full table-auto">
               <thead className="text-[12px]">
                 <tr className="border-b-[1px] border-[#F3E6F2]">
-                  <th className="p-2 text-center">
+                  {/* <th className="p-2 text-center">
                     <input
                       type="checkbox"
                       className="cursor-pointer"
@@ -247,7 +247,7 @@ const CombinedDeliveryboyReports = () => {
                       checked={currentRows.length > 0 && currentRows.every((rider) => selectedItems.includes(rider.id))}
                       aria-label="Select All"
                     />
-                  </th>
+                  </th> */}
                   <th className="p-2 text-center font-medium">S.No.</th>
                   <th className="p-2 font-medium text-left whitespace-nowrap" style={{ minWidth: '120px' }}>
                     Rider Name
@@ -278,7 +278,7 @@ const CombinedDeliveryboyReports = () => {
                         className="border-b-[1px] border-[#F3E6F2] hover:bg-gray-50 cursor-pointer"
                         onClick={() => toggleRider(rider.id)}
                       >
-                        <td className="p-2 text-center">
+                        {/* <td className="p-2 text-center">
                           <input
                             type="checkbox"
                             className="cursor-pointer"
@@ -287,7 +287,7 @@ const CombinedDeliveryboyReports = () => {
                             aria-label={`Select Rider ${index + 1}`}
                             onClick={(e) => e.stopPropagation()}
                           />
-                        </td>
+                        </td> */}
                         <td className="p-2 text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                         <td className="p-2 text-left text-[12px] font-medium text-gray-500" style={{ minWidth: '120px' }}>
                           {rider.title || '-'}

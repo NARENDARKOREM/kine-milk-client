@@ -240,26 +240,20 @@ const ProductInventoryAdd = () => {
   };
 
   // Category options for dropdown
-  const categoryOptions = [
-    { value: "", label: "Select Category", isDisabled: true },
-    ...(Array.isArray(categories) && categories.length > 0
-      ? categories.map((category) => ({
-          value: category.id,
-          label: category.name,
-        }))
-      : []),
-  ];
+const categoryOptions = Array.isArray(categories) && categories.length > 0
+  ? categories.map((category) => ({
+      value: category.id,
+      label: category.name,
+    }))
+  : [];
 
   // Product options filtered by selected category
-  const productOptions = [
-    { value: "", label: "Select Product", isDisabled: true },
-    ...(selectedCategory && Array.isArray(selectedCategory.products)
-      ? selectedCategory.products.map((product) => ({
-          value: product.id,
-          label: product.title,
-        }))
-      : []),
-  ];
+const productOptions = selectedCategory && Array.isArray(selectedCategory.products)
+  ? selectedCategory.products.map((product) => ({
+      value: product.id,
+      label: product.title,
+    }))
+  : [];
 
   return (
     <div className="bg-[#f7fbff] h-full">
@@ -279,22 +273,18 @@ const ProductInventoryAdd = () => {
                       <label className="block text-left">
                         Category <span className="text-red-500">*</span>
                       </label>
-                      <Select
-                        value={categoryOptions.find(
-                          (option) => option.value === formData.category_id
-                        )}
-                        onChange={handleCategoryChange}
-                        options={categoryOptions}
-                        styles={customStyles}
-                        placeholder="Select Category"
-                        isSearchable={false}
-                        components={{
-                          DropdownIndicator: () => (
-                            <AiOutlineDown className="w-4 h-4" />
-                          ),
-                          IndicatorSeparator: () => null,
-                        }}
-                      />
+                     <Select
+  value={categoryOptions.find((option) => option.value === formData.category_id)}
+  onChange={handleCategoryChange}
+  options={categoryOptions}
+  styles={customStyles}
+  placeholder="Select Category"
+  isSearchable={false}
+  components={{
+    DropdownIndicator: () => <AiOutlineDown className="w-4 h-4" />,
+    IndicatorSeparator: () => null,
+  }}
+/>
                       {errors.category_id && (
                         <p className="text-red-500 text-sm">
                           Category is required
@@ -311,23 +301,19 @@ const ProductInventoryAdd = () => {
                       <label className="block text-left">
                         Product <span className="text-red-500">*</span>
                       </label>
-                      <Select
-                        value={productOptions.find(
-                          (option) => option.value === formData.product_id
-                        )}
-                        onChange={handleProductChange}
-                        options={productOptions}
-                        styles={customStyles}
-                        placeholder="Select Product"
-                        isSearchable={false}
-                        isDisabled={!selectedCategory}
-                        components={{
-                          DropdownIndicator: () => (
-                            <AiOutlineDown className="w-4 h-4" />
-                          ),
-                          IndicatorSeparator: () => null,
-                        }}
-                      />
+                     <Select
+  value={productOptions.find((option) => option.value === formData.product_id)}
+  onChange={handleProductChange}
+  options={productOptions}
+  styles={customStyles}
+  placeholder="Select Product"
+  isSearchable={false}
+  isDisabled={!selectedCategory}
+  components={{
+    DropdownIndicator: () => <AiOutlineDown className="w-4 h-4" />,
+    IndicatorSeparator: () => null,
+  }}
+/>
                       {errors.product_id && (
                         <p className="text-red-500 text-sm">
                           Product is required

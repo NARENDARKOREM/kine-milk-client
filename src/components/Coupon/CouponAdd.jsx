@@ -320,7 +320,7 @@ const CouponAdd = () => {
                   <div className="grid gap-6 w-full sm:grid-cols-1 md:grid-cols-3">
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Coupon Image
+                        Coupon Image<span className="text-red-500">*</span>
                       </label>
                       <input
                         type="file"
@@ -345,7 +345,7 @@ const CouponAdd = () => {
 
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Coupon Code
+                        Coupon Code<span className="text-red-500">*</span>
                       </label>
                       <div className="flex">
                         <input
@@ -374,7 +374,7 @@ const CouponAdd = () => {
 
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Coupon Title
+                        Coupon Title<span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -394,7 +394,7 @@ const CouponAdd = () => {
 
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Status
+                        Status<span className="text-red-500">*</span>
                       </label>
                       <Select
                         value={statusOptions.find(
@@ -459,7 +459,7 @@ const CouponAdd = () => {
 
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Coupon Subtitle
+                        Coupon Subtitle<span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -478,32 +478,38 @@ const CouponAdd = () => {
                     </div>
 
                     <div className="flex flex-col">
-                      <label className="text-sm text-left font-medium">
-                        Minimum Order Amount
-                      </label>
-                      <input
-                        type="text"
-                        {...register("min_amt", {
-                          required: "Amount is required",
-                          pattern: {
-                            value: /^[0-9]+(\.[0-9]+)?$/,
-                            message: "Invalid amount",
-                          },
-                        })}
-                        value={formData.min_amt}
-                        onChange={handleChange}
-                        className="border p-3 w-full h-12 rounded-lg"
-                      />
-                      {errors.min_amt && (
-                        <p className="text-red-500 text-sm">
-                          {errors.min_amt.message}
-                        </p>
-                      )}
-                    </div>
+  <label className="text-sm text-left font-medium">
+    Minimum Order Amount<span className="text-red-500">*</span>
+  </label>
+  <input
+    type="number"
+    {...register("min_amt", {
+      required: "Amount is required",
+      pattern: {
+        value: /^[0-9]+$/,
+        message: "Only whole numbers are allowed",
+      },
+      min: {
+        value: 0,
+        message: "Amount cannot be negative",
+      },
+    })}
+    value={formData.min_amt}
+    onChange={handleChange}
+    className="border p-3 w-full h-12 rounded-lg"
+    min="0"
+    step="1"
+  />
+  {errors.min_amt && (
+    <p className="text-red-500 text-sm">
+      {errors.min_amt.message}
+    </p>
+  )}
+</div>
 
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Coupon Value
+                        Coupon Value<span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -527,7 +533,7 @@ const CouponAdd = () => {
 
                     <div className="flex flex-col md:col-span-3">
                       <label className="text-sm text-left font-medium">
-                        Coupon Description
+                        Coupon Description<span className="text-red-500">*</span>
                       </label>
                       <textarea
                         {...register("description", {

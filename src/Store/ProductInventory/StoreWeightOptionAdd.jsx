@@ -14,6 +14,7 @@ const StoreWeightOptionAdd = () => {
   const { product_inventory_id } = useParams();
   const [storeId, setStoreId] = useState("");
   const [product, setProduct] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newWeightOption, setNewWeightOption] = useState({
     weight_id: "",
     weight: "",
@@ -53,6 +54,7 @@ const StoreWeightOptionAdd = () => {
         setProduct(fetchedData.product);
       } catch (error) {
         console.error("Error fetching product details:", error);
+        NotificationManager.removeAll();
         NotificationManager.error("Failed to fetch product details.");
         setError("Failed to load product details. Please try again.");
       } finally {
@@ -81,6 +83,7 @@ const StoreWeightOptionAdd = () => {
         }
       } catch (error) {
         console.error("Error fetching existing quantities:", error);
+        NotificationManager.removeAll();
         NotificationManager.error("Failed to fetch existing quantities.");
       }
     }
@@ -121,22 +124,27 @@ const StoreWeightOptionAdd = () => {
   // Add new weight option to table
   const addWeightOption = () => {
     if (!newWeightOption.weight_id) {
+      NotificationManager.removeAll();
       NotificationManager.error("Please select a valid weight option.");
       return;
     }
     if (!newWeightOption.quantity || newWeightOption.quantity <= 0) {
+      NotificationManager.removeAll();
       NotificationManager.error("Please enter a valid quantity greater than 0.");
       return;
     }
     if (product?.subscription_required === 1 && (!newWeightOption.subscription_quantity || newWeightOption.subscription_quantity <= 0)) {
+      NotificationManager.removeAll();
       NotificationManager.error("Please enter a valid subscription quantity greater than 0.");
       return;
     }
     if (!newWeightOption.normal_price) {
+      NotificationManager.removeAll();
       NotificationManager.error("Normal price is required.");
       return;
     }
     if (product?.subscription_required === 1 && !newWeightOption.subscribe_price) {
+      NotificationManager.removeAll();
       NotificationManager.error("Subscribe price is required.");
       return;
     }
@@ -146,6 +154,7 @@ const StoreWeightOptionAdd = () => {
     );
 
     if (weightExists) {
+      NotificationManager.removeAll();
       NotificationManager.error("This weight option is already added in the current session.");
       return;
     }
@@ -178,7 +187,7 @@ const StoreWeightOptionAdd = () => {
       existing_quantity: "",
       existing_subscription_quantity: "",
     });
-
+    NotificationManager.removeAll();
     NotificationManager.success("Weight option added to table!");
   };
 
@@ -209,14 +218,17 @@ const StoreWeightOptionAdd = () => {
   const saveEditedRow = (index) => {
     const option = weightOptions[index];
     if (!option.quantity || option.quantity <= 0) {
+      NotificationManager.removeAll();
       NotificationManager.error("Please enter a valid quantity greater than 0.");
       return;
     }
     if (product?.subscription_required === 1 && (!option.subscription_quantity || option.subscription_quantity <= 0)) {
+      NotificationManager.removeAll();
       NotificationManager.error("Please enter a valid subscription quantity greater than 0.");
       return;
     }
     setEditingRowIndex(null);
+    NotificationManager.removeAll();
     NotificationManager.success("Weight option updated in table!");
   };
 
@@ -228,24 +240,28 @@ const StoreWeightOptionAdd = () => {
   // Remove weight option from table
   const removeWeightOption = (index) => {
     setWeightOptions((prev) => prev.filter((_, i) => i !== index));
+    NotificationManager.removeAll();
     NotificationManager.success("Weight option removed from table!");
   };
 
   // Submit all weight options to add inventory
   const submitWeightOptions = async () => {
-    if (weightOptions.length === 0) {
-      NotificationManager.error("At least one weight option with a quantity greater than 0 is required.");
-      return;
-    }
-
-    const weightIds = weightOptions.map((opt) => opt.weight_id);
-    const hasDuplicates = new Set(weightIds).size !== weightIds.length;
-    if (hasDuplicates) {
-      NotificationManager.error("Duplicate weight options detected. Please remove duplicates before submitting.");
-      return;
-    }
-
+    setIsSubmitting(true); // Set loading state
     try {
+      if (weightOptions.length === 0) {
+        NotificationManager.removeAll();
+        NotificationManager.error("At least one weight option with a quantity greater than 0 is required.");
+        return;
+      }
+
+      const weightIds = weightOptions.map((opt) => opt.weight_id);
+      const hasDuplicates = new Set(weightIds).size !== weightIds.length;
+      if (hasDuplicates) {
+        NotificationManager.removeAll();
+        NotificationManager.error("Duplicate weight options detected. Please remove duplicates before submitting.");
+        return;
+      }
+
       const payload = {
         product_inventory_id: product_inventory_id,
         store_id: storeId,
@@ -258,7 +274,8 @@ const StoreWeightOptionAdd = () => {
       };
 
       await api.post("/storeweightoption/add", payload);
-      NotificationManager.success("Inventory added successfully!");
+      NotificationManager.removeAll();
+      NotificationManager.success("Inventory added successfully!", "", 3000); // Increased duration to 3 seconds
       setWeightOptions([]);
       setNewWeightOption({
         weight_id: "",
@@ -273,10 +290,13 @@ const StoreWeightOptionAdd = () => {
         existing_quantity: "",
         existing_subscription_quantity: "",
       });
-      navigate(`/inventory/${product_inventory_id}`);
+      setTimeout(() => navigate(`/inventory/${product_inventory_id}`), 3000); // Delay navigation to show notification
     } catch (error) {
       console.error("Error adding inventory:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Failed to add inventory.");
+    } finally {
+      setIsSubmitting(false); // Reset loading state
     }
   };
 
@@ -350,7 +370,7 @@ const StoreWeightOptionAdd = () => {
                     <>
                       <div className="grid grid-cols-5 gap-4">
                         <div>
-                          <label className="block text-left">Weight Option</label>
+                          <label className="block text-left">Weight Option<span className="text-red-500">*</span></label>
                           <Select
                             value={weightOptionsList.find(
                               (option) => option.value === newWeightOption.weight_id
@@ -388,7 +408,7 @@ const StoreWeightOptionAdd = () => {
                         </div>
                         <div>
                           <label className="block text-left">
-                            Add Quantity <span className="text-red-500">*</span>
+                            Add Instant Quantity <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="number"
@@ -454,8 +474,8 @@ const StoreWeightOptionAdd = () => {
                             <thead>
                               <tr>
                                 <th className="border border-gray-300 p-2">Weight</th>
-                                <th className="border border-gray-300 p-2">Normal Price</th>
-                                <th className="border border-gray-300 p-2">Quantity</th>
+                                <th className="border border-gray-300 p-2">Instant Price</th>
+                                <th className="border border-gray-300 p-2">Instant Quantity</th>
                                 <th className="border border-gray-300 p-2">Instant Total</th>
                                 {product?.subscription_required === 1 && (
                                   <>
@@ -613,9 +633,32 @@ const StoreWeightOptionAdd = () => {
                             <button
                               type="button"
                               onClick={submitWeightOptions}
-                              className="bg-[#393185] text-white py-2 px-4 rounded"
+                              className={`bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+                                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                              }`}
+                              disabled={isSubmitting}
                             >
-                              Add Inventory
+                              {isSubmitting ? (
+                                <svg
+                                  className="animate-spin h-5 w-5 mr-2 text-white"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  />
+                                </svg>
+                              ) : null}
+                              {isSubmitting ? "Submitting..." : "Add Inventory"}
                             </button>
                           </div>
                         </div>

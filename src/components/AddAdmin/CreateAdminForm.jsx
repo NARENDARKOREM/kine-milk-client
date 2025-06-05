@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import Header from "../../common/Header";
 import InnerHeader from "../Coupon/CouponHeader";
 import api from "../../utils/api"
+import SimpleHeader from "../../common/SimpleHeader";
 const CreateAdminForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,14 +57,14 @@ const CreateAdminForm = () => {
   return (
     <div className="bg-[#f7fbff] h-full">
       <Header />
-      <InnerHeader name={"Admin Management"} />
+      <SimpleHeader name={"Admin Management"} />
       <div className=" p-6 w-full">
         <div className="container">
           <h2 className="text-xl font-bold mb-4">{id ? "Edit Admin" : "Create Admin"}</h2>
          <div className="bg-white max-h-[50vh] w-[76vw] rounded-xl border border-[#EAE5FF] py-4 px-6 overflow-y-auto scrollbar-none">
          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-4">
-              <label className="block text-sm text-left font-medium mb-2">Email</label>
+              <label className="block text-sm text-left font-medium mb-2">Email<span className="text-red-500">*</span></label>
               <input
                 type="text"
                 {...register("email", { required: "Email is required" })}
@@ -72,7 +73,7 @@ const CreateAdminForm = () => {
               {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
             </div>
             <div className="mb-4">
-              <label className="block text-sm text-left font-medium mb-2">Password</label>
+              <label className="block text-sm text-left font-medium mb-2">Password<span className="text-red-500">*</span></label>
               <input
                 type="password"
                 {...register("password", id ? {} : { required: "Password is required" })} 
