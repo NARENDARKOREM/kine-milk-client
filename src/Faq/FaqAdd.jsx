@@ -31,7 +31,7 @@ const FaqAdd = () => {
   const location = useLocation();
   const id = location.state ? location.state.id : null;
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Watch the status field to get its current value
   const statusValue = watch("status");
@@ -43,7 +43,7 @@ const FaqAdd = () => {
   }, [id]);
 
   const getFAQ = async (id) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       const response = await api.get(`/faq/getbyid/${id}`);
       const faq = response.data;
@@ -57,12 +57,12 @@ const FaqAdd = () => {
       console.error("Error fetching FAQ:", error);
       NotificationManager.error("Failed to fetch FAQ data.");
     } finally {
-      setTimeout(() => setIsLoading(false), 2000);
+      setTimeout(() => setIsSubmitting(false), 2000);
     }
   };
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       const formData = {
         id: id || undefined,
@@ -87,7 +87,7 @@ const FaqAdd = () => {
       console.error("Error submitting FAQ:", error);
       NotificationManager.error("An error occurred while submitting the FAQ. Please try again later.");
     } finally {
-      setTimeout(() => setIsLoading(false), 2000);
+      setTimeout(() => setIsSubmitting(false), 2000);
     }
   };
 
@@ -138,11 +138,7 @@ const FaqAdd = () => {
             <SimpleHeader name={"FAQ's Management"} />
 
             <div className="h-full px-6 max-w-5xl" style={{ paddingTop: "24px" }}>
-              {isLoading ? (
-                <div className="flex justify-center items-center h-64 w-full">
-                  <MilkLoader />
-                </div>
-              ) : (
+
                 <div
                   className="bg-white h-[67vh] w-[76vw] rounded-xl border border-[#EAE5FF] py-4 px-6 overflow-y-auto"
                   style={{ scrollbarWidth: "none" }}
@@ -223,20 +219,44 @@ const FaqAdd = () => {
 
                     {/* Action Buttons */}
                     <div className="flex justify-start mt-6 gap-3">
-                      <button
-                        type="submit"
-                        className={`py-2 mt-6 float-start ${
-                          id ? "bg-[#393185]" : "bg-[#393185] hover:bg-[#393185]"
-                        } text-white rounded-lg w-[150px] h-12 font-[Montserrat] font-bold`}
-                        style={{ borderRadius: "8px" }}
-                        disabled={isLoading}
-                      >
-                        {id ? "Update FAQ's" : "Add FAQ's"}
-                      </button>
+<button
+  type="submit"
+  className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+  }`}
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <svg
+      className="animate-spin h-5 w-5 mr-2 text-white"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  ) : null}
+  {isSubmitting
+    ? "Submitting..."
+    : id
+    ? "Update FAQ"
+    : "Add FAQ"}
+</button>
+
                     </div>
                   </form>
                 </div>
-              )}
+          
             </div>
           </div>
         </main>

@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../common/Header";
-import {
-  NotificationContainer,
-  NotificationManager,
-} from "react-notifications";
+import SimpleHeader from "../../common/SimpleHeader";
+import { NotificationContainer, NotificationManager } from "react-notifications";
 import "react-notifications/lib/notifications.css";
 import api from "../../utils/api";
 import Select from "react-select";
 import { AiOutlineDown } from "react-icons/ai";
 import { useForm } from "react-hook-form";
-import SimpleHeader from "../../common/SimpleHeader";
 
 const BannerAdd = () => {
   const {
@@ -41,14 +38,13 @@ const BannerAdd = () => {
   const statusOptions = [
     { value: "1", label: "Published" },
     { value: "0", label: "Unpublished" },
-    { value: "2", label: "Scheduled" },
   ];
 
   const customStyles = {
     control: (base, { isFocused }) => ({
       ...base,
-      border: `${isFocused ? "2px solid #393185" : "1px solid #B0B0B0"}`,
-      boxShadow: isFocused ? "none" : "none",
+      border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
+      boxShadow: "none",
       borderRadius: "5px",
       padding: "0px",
       fontSize: "12px",
@@ -79,7 +75,11 @@ const BannerAdd = () => {
       fontWeight: "600",
       color: "#393185",
     }),
-    placeholder: (base) => ({ ...base, color: "#393185", fontSize: "12px" }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#393185",
+      fontSize: "12px",
+    }),
   };
 
   const handleImageUpload = (e) => {
@@ -96,19 +96,12 @@ const BannerAdd = () => {
       }
       clearErrors("img");
       const imgURL = URL.createObjectURL(file);
-      setFormData({ ...formData, img: imgURL });
+      setFormData({ ...formData, img: imgURL, file });
     }
   };
 
   const handleSelectChange = (field, selectedOption) => {
     const newFormData = { ...formData, [field]: selectedOption.value };
-    if (field === "status" && selectedOption.value === "0") {
-      newFormData.startTime = "";
-      newFormData.endTime = "";
-      setValue("startTime", "");
-      setValue("endTime", "");
-      clearErrors(["startTime", "endTime"]);
-    }
     setFormData(newFormData);
     setValue(field, selectedOption.value);
   };
@@ -118,62 +111,86 @@ const BannerAdd = () => {
     setValue(field, value);
   };
 
+  const formatDateForInput = (date, forMin = false) => {
+    if (!date) return "";
+    const istDate = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    if (forMin) {
+      // Add 1 minute to the current time for the min attribute to ensure future selection
+      istDate.setMinutes(istDate.getMinutes() + 1);
+    }
+    const pad = (n) => n.toString().padStart(2, "0");
+    const year = istDate.getFullYear();
+    const month = pad(istDate.getMonth() + 1);
+    const day = pad(istDate.getDate());
+    const hours = pad(istDate.getHours());
+    const minutes = pad(istDate.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     NotificationManager.removeAll();
     try {
       if (!formData.planType) {
-        NotificationManager.removeAll()
-        NotificationManager.error("Plan type is required.");
+        NotificationManager.error("Plan type is required.", "Error");
+        setIsSubmitting(false);
         return;
       }
       if (!formData.status) {
-        NotificationManager.removeAll()
-        NotificationManager.error("Banner status is required.");
+        NotificationManager.error("Status is required.", "Error");
+        setIsSubmitting(false);
         return;
       }
       if (!id && !data.img) {
-        NotificationManager.removeAll()
-        NotificationManager.error("Banner image is required for a new banner.");
+        NotificationManager.error("Banner image is required for a new banner.", "Error");
+        setIsSubmitting(false);
         return;
       }
 
-      const currentTime = new Date();
+      // Get current time in IST
+      const nowInIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      console.log("Current Time in IST:", nowInIST.toISOString());
 
-      if (formData.status === "2") {
-        if (!formData.startTime) {
-          NotificationManager.removeAll()
-          NotificationManager.error("Start time is required for Scheduled status.");
-          return;
-        }
-        const startDate = new Date(formData.startTime);
-        if (startDate <= currentTime) {
-          NotificationManager.removeAll()
-          NotificationManager.error("Start time must be in the future for Scheduled status.");
-          return;
-        }
-        if (!formData.endTime) {
-          NotificationManager.removeAll()
-          NotificationManager.error("End time is required for Scheduled status.");
-          return;
-        }
-        const endDate = new Date(formData.endTime);
-        if (endDate <= startDate) {
-          NotificationManager.removeAll()
-          NotificationManager.error("End time must be greater than start time for Scheduled status.");
-          return;
-        }
-        if (endDate <= currentTime) {
-          NotificationManager.removeAll()
-          NotificationManager.error("End time must be in the future for Scheduled status.");
+      if (formData.startTime) {
+        const startDateInIST = new Date(formData.startTime);
+        console.log("Start Date in IST:", startDateInIST.toISOString());
+        // Compare dates by setting seconds and milliseconds to 0 to avoid precision issues
+        const nowInISTForComparison = new Date(nowInIST);
+        nowInISTForComparison.setSeconds(0, 0);
+        const startDateInISTForComparison = new Date(startDateInIST);
+        startDateInISTForComparison.setSeconds(0, 0);
+        // Only enforce future startTime for new banners, not when editing
+        if (!id && startDateInISTForComparison <= nowInISTForComparison) {
+          NotificationManager.error("Start date/time must be in the future.", "Error");
+          setIsSubmitting(false);
           return;
         }
       }
 
-      if (formData.status === "1" && formData.endTime) {
-        const endDate = new Date(formData.endTime);
-        if (endDate <= currentTime) {
-          NotificationManager.error("End time must be in the future if provided for Published status.");
+      if (formData.endTime) {
+        const endDateInIST = new Date(formData.endTime);
+        console.log("End Date in IST:", endDateInIST.toISOString());
+        const nowInISTForComparison = new Date(nowInIST);
+        nowInISTForComparison.setSeconds(0, 0);
+        const endDateInISTForComparison = new Date(endDateInIST);
+        endDateInISTForComparison.setSeconds(0, 0);
+        if (endDateInISTForComparison <= nowInISTForComparison) {
+          NotificationManager.error("End date/time must be in the future.", "Error");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      if (formData.startTime && formData.endTime) {
+        const startDateInIST = new Date(formData.startTime);
+        const endDateInIST = new Date(formData.endTime);
+        const startDateInISTForComparison = new Date(startDateInIST);
+        startDateInISTForComparison.setSeconds(0, 0);
+        const endDateInISTForComparison = new Date(endDateInIST);
+        endDateInISTForComparison.setSeconds(0, 0);
+        if (startDateInISTForComparison >= endDateInISTForComparison) {
+          NotificationManager.error("End date/time must be after start date/time.", "Error");
+          setIsSubmitting(false);
           return;
         }
       }
@@ -181,11 +198,11 @@ const BannerAdd = () => {
       const form = new FormData();
       form.append("planType", formData.planType);
       form.append("status", formData.status);
-      if (formData.status === "2") {
-        form.append("startTime", formData.startTime);
+      if (formData.startTime) {
+        form.append("startTime", new Date(formData.startTime).toISOString());
       }
-      if ((formData.status === "1" && formData.endTime) || formData.status === "2") {
-        form.append("endTime", formData.endTime);
+      if (formData.endTime) {
+        form.append("endTime", new Date(formData.endTime).toISOString());
       }
       if (data.img && data.img[0]) {
         form.append("img", data.img[0]);
@@ -200,14 +217,15 @@ const BannerAdd = () => {
       });
 
       NotificationManager.success(
-        id ? "Banner updated successfully." : "Banner added successfully."
+        id ? "Banner updated successfully." : "Banner added successfully.",
+        "Success"
       );
       setTimeout(() => navigate("/admin/banner-list"), 2000);
     } catch (error) {
       const errorMsg =
         error.response?.data?.ResponseMsg ||
         (id ? "Failed to update Banner" : "Failed to add Banner");
-      NotificationManager.error(errorMsg);
+      NotificationManager.error(errorMsg, "Error");
     } finally {
       setIsSubmitting(false);
     }
@@ -219,12 +237,11 @@ const BannerAdd = () => {
         try {
           const response = await api.get(`/banner/getbannerbyid/${id}`);
           if (response.data) {
-            // Backend now returns IST times, so we can use them directly
             const startTime = response.data.startTime
-              ? new Date(response.data.startTime).toISOString().slice(0, 16)
+              ? formatDateForInput(new Date(response.data.startTime))
               : "";
             const endTime = response.data.endTime
-              ? new Date(response.data.endTime).toISOString().slice(0, 16)
+              ? formatDateForInput(new Date(response.data.endTime))
               : "";
             setFormData({
               planType: response.data.planType,
@@ -240,7 +257,7 @@ const BannerAdd = () => {
           }
         } catch (error) {
           NotificationManager.removeAll();
-          NotificationManager.error("Failed to load banner details.");
+          NotificationManager.error("Failed to load banner details.", "Error");
         }
       };
       fetchData();
@@ -252,12 +269,14 @@ const BannerAdd = () => {
       <Header />
       <SimpleHeader name={"Banner Management"} />
       <div className="container px-6">
+
         <div className="bg-white max-h-max w-[76vw] rounded-xl border border-[#EAE5FF] py-4 px-6 overflow-y-auto scrollbar-none">
           <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+
             <div className="flex flex-col w-full gap-y-4">
               <div className="flex flex-col w-full">
                 <label className="block text-left text-sm font-medium mb-1">
-                  Image
+                  Banner Image
                 </label>
                 <input
                   type="file"
@@ -268,6 +287,7 @@ const BannerAdd = () => {
                   onChange={handleImageUpload}
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
                   className="w-full border border-gray-300 rounded p-2"
+                  disabled={isSubmitting}
                 />
                 {formData.img && (
                   <img
@@ -283,7 +303,7 @@ const BannerAdd = () => {
 
               <div className="flex flex-row gap-x-4">
                 <div className="flex flex-col w-1/2">
-                  <label className="block text-left text-sm font-medium mb-1">
+                  <label className="block text-left text-sm font-medium mb-0">
                     Plan Type
                   </label>
                   <Select
@@ -293,9 +313,6 @@ const BannerAdd = () => {
                     onChange={(option) => handleSelectChange("planType", option)}
                     options={planTypeOptions}
                     styles={customStyles}
-                    menuPortalTarget={document.body}
-                    menuPosition="absolute"
-                    menuShouldScrollIntoView={false}
                     placeholder="Select Plan Type"
                     isSearchable={false}
                     components={{
@@ -305,6 +322,10 @@ const BannerAdd = () => {
                       IndicatorSeparator: () => null,
                     }}
                     className="w-full"
+                    menuPortalTarget={document.body}
+                    menuPosition="absolute"
+                    menuShouldScrollIntoView={false}
+                    isDisabled={isSubmitting}
                   />
                 </div>
 
@@ -319,9 +340,6 @@ const BannerAdd = () => {
                     onChange={(option) => handleSelectChange("status", option)}
                     options={statusOptions}
                     styles={customStyles}
-                    menuPortalTarget={document.body}
-                    menuPosition="absolute"
-                    menuShouldScrollIntoView={false}
                     placeholder="Select Status"
                     isSearchable={false}
                     components={{
@@ -331,53 +349,54 @@ const BannerAdd = () => {
                       IndicatorSeparator: () => null,
                     }}
                     className="w-full"
+                    menuPortalTarget={document.body}
+                    menuPosition="absolute"
+                    menuShouldScrollIntoView={false}
+                    isDisabled={isSubmitting}
                   />
                 </div>
               </div>
 
-              {formData.status === "2" && (
-                <div className="flex flex-col w-full">
+              <div className="flex flex-row gap-x-4">
+                <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    Start Time
+                    Start Date and Time (Optional)
                   </label>
                   <input
                     type="datetime-local"
-                    {...register("startTime", {
-                      required: formData.status === "2" ? "Start time is required" : false,
-                    })}
+                    {...register("startTime")}
                     value={formData.startTime}
                     onChange={(e) => handleTimeChange("startTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={new Date().toISOString().slice(0, 16)}
+                    min={id ? undefined : formatDateForInput(new Date(), true)} // Only enforce min for new banners
+                    disabled={isSubmitting}
                   />
                   {errors.startTime && (
                     <p className="text-red-500 text-sm">{errors.startTime.message}</p>
                   )}
                 </div>
-              )}
 
-              {(formData.status === "1" || formData.status === "2") && (
-                <div className="flex flex-col w-full">
+                <div className="flex flex-col w-1/2">
                   <label className="block text-left text-sm font-medium mb-1">
-                    End Time {formData.status === "1" && "(Optional)"}
+                    End Date and Time (Optional)
                   </label>
                   <input
                     type="datetime-local"
-                    {...register("endTime", {
-                      required: formData.status === "2" ? "End time is required" : false,
-                    })}
+                    {...register("endTime")}
                     value={formData.endTime}
                     onChange={(e) => handleTimeChange("endTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={formData.startTime || new Date().toISOString().slice(0, 16)}
+                    min={formData.startTime || formatDateForInput(new Date(), true)} // Use startTime if available, otherwise current time + 1 minute
+                    disabled={isSubmitting}
                   />
                   {errors.endTime && (
                     <p className="text-red-500 text-sm">{errors.endTime.message}</p>
                   )}
                 </div>
-              )}
+              </div>
             </div>
-<button
+
+            <button
               type="submit"
               className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
                 isSubmitting ? "opacity-50 cursor-not-allowed" : ""
@@ -409,7 +428,7 @@ const BannerAdd = () => {
           </form>
         </div>
       </div>
-      <NotificationContainer />
+      <NotificationContainer style={{ zIndex: 10000 }} />
     </div>
   );
 };

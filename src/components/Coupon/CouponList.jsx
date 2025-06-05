@@ -30,6 +30,12 @@ const CouponList = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const itemsPerPage = 10;
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return isNaN(date) ? "N/A" : date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  };
+
   useEffect(() => {
     async function fetchCoupon() {
       setIsLoading(true);
@@ -56,12 +62,6 @@ const CouponList = () => {
     }
     fetchCoupon();
   }, []);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return isNaN(date) ? "N/A" : date.toLocaleString();
-  };
 
   useEffect(() => {
     const timer = setTimeout(() => {}, 1000);
@@ -124,12 +124,14 @@ const CouponList = () => {
         setCoupon(updatedCoupons);
         setFilteredCoupon(updatedCoupons);
         setTotalPages(Math.ceil(updatedCoupons.length / itemsPerPage));
-        NotificationManager.success("Coupon deleted successfully", "Success", 3000);
+        NotificationManager.removeAll();
+        // NotificationManager.success("Coupon deleted successfully", "Success", 3000);
       } else {
         throw new Error("Failed to delete");
       }
     } catch (error) {
       console.error("Error deleting coupon:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Failed to delete coupon", "Error", 3000);
     }
   };
@@ -141,9 +143,10 @@ const CouponList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity("Coupon", id, currentStatus, setFilteredCoupon, filteredCoupon, field);
-      NotificationManager.success("Coupon status updated successfully", "Success", 3000);
+      // NotificationManager.success("Coupon status updated successfully", "Success", 3000);
     } catch (error) {
       console.error("Error toggling coupon status:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Failed to update coupon status", "Error", 3000);
     }
   };
@@ -179,17 +182,14 @@ const CouponList = () => {
   );
 
   const renderStatus = (status, id) => {
-    let statusLabel = status === 1 ? "Published" : status === 2 ? "Scheduled" : "Unpublished";
-    const isScheduled = status === 2;
-    const isToggleEnabled = !isScheduled;
-
+    let statusLabel = status === 1 ? "Published" : "Unpublished";
     return (
       <div className="flex items-center">
         <FontAwesomeIcon
-          className={`h-7 w-16 ${isToggleEnabled ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+          className="h-7 w-16 cursor-pointer"
           style={{ color: status === 1 ? "#0064DC" : "#e9ecef" }}
           icon={status === 1 ? faToggleOn : faToggleOff}
-          onClick={isToggleEnabled ? () => handleToggleChange(id, status, "status") : null}
+          onClick={() => handleToggleChange(id, status, "status")}
         />
         <span className="ml-2 text-sm">{statusLabel}</span>
       </div>
