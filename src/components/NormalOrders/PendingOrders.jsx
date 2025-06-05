@@ -136,7 +136,7 @@ const PendingOrders = () => {
         <Header />
         <InnerHeader
           onSearch={handleSearch}
-          name={"Instant Pending Order List"}
+          name={"Pending instant orders"}
         />
         <ProductInventoryTable
           columns={columns}

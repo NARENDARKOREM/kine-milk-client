@@ -259,7 +259,7 @@ const RiderAdd = () => {
                         htmlFor="rider_name"
                         className="text-sm font-medium text-start"
                       >
-                        Rider Name
+                        Rider Name<span className="text-red-500">*</span>
                       </label>
                       <input
                         id="rider_name"
@@ -286,7 +286,7 @@ const RiderAdd = () => {
                         htmlFor="rider_email"
                         className="text-sm font-medium text-start"
                       >
-                        Rider Email
+                        Rider Email<span className="text-red-500">*</span>
                       </label>
                       <input
                         id="rider_email"
@@ -317,7 +317,7 @@ const RiderAdd = () => {
                         htmlFor="rider_mobile"
                         className="text-sm font-medium text-start"
                       >
-                        Rider Mobile Number
+                        Rider Mobile Number<span className="text-red-500">*</span>
                       </label>
                       <input
                         id="rider_mobile"
@@ -348,7 +348,7 @@ const RiderAdd = () => {
                         htmlFor="rider_password"
                         className="text-sm font-medium text-start"
                       >
-                        Rider Password
+                        Rider Password<span className="text-red-500">*</span>
                       </label>
                       <div className="relative w-full">
                         <input
@@ -385,7 +385,7 @@ const RiderAdd = () => {
                     {/* Status */}
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Status
+                        Status<span className="text-red-500">*</span>
                       </label>
                       <Select
                         value={statusOptions.find(
@@ -415,7 +415,7 @@ const RiderAdd = () => {
                     {/* Rider Time Slots */}
                     <div className="flex flex-col">
                       <label className="text-sm text-left font-medium">
-                        Rider Time Slots
+                        Rider Time Slots<span className="text-red-500">*</span>
                       </label>
                       <Select
                         isMulti
@@ -448,7 +448,7 @@ const RiderAdd = () => {
                         htmlFor="img"
                         className="text-sm font-medium text-start"
                       >
-                        Rider Image
+                        Rider Image<span className="text-red-500">*</span>
                       </label>
                       <input
                         type="file"

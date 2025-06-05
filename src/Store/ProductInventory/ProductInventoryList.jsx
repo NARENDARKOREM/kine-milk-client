@@ -132,7 +132,7 @@ const ProductInventoryList = () => {
   const handleToggleChange = async (id, currentStatus, field) => {
     try {
       await StatusEntity(
-        "productInventory",
+        "product-Inventory",
         id,
         currentStatus,
         setFilteredProducts,

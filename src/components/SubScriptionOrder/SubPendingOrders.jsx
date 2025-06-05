@@ -135,7 +135,7 @@ const SubPendingOrders = () => {
         <Header />
         <InnerHeader
           onSearch={handleSearch}
-          name={"Subscription Pending Order List"}
+          name={"Pending subscribe orders"}
         />
         <ProductInventoryTable
           columns={columns}
