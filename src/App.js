@@ -1,4 +1,4 @@
-import "./App.css";
+import "./App.css"; 
 import SidebarMenu from "./common/StoreSidebar";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Dashboard from "./components/Dashboard/Dashboard";
