@@ -1,4 +1,4 @@
-import React, {useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../common/Header";
 import SimpleHeader from "../../common/SimpleHeader";
@@ -98,15 +98,17 @@ const IllustrationImageAdd = () => {
         });
         e.target.value = "";
         setImagePreview(null);
+        setValue("img", null);
         return;
       }
       clearErrors("img");
       const imgURL = URL.createObjectURL(file);
       setImagePreview(imgURL);
-      setValue("img", file); // Set file directly in form state
+      setValue("img", file, { shouldValidate: true });
     } else {
       setImagePreview(null);
       setValue("img", null);
+      clearErrors("img");
     }
   };
 
@@ -123,25 +125,18 @@ const IllustrationImageAdd = () => {
   };
 
   const onSubmit = async (data) => {
+    console.log("Form Data:", data);
+    console.log("Image is File:", data.img instanceof File);
     setIsSubmitting(true);
     NotificationManager.removeAll();
     try {
-      
       if (!data.screenName) {
-        NotificationManager.removeAll();
         NotificationManager.error("Screen name is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!data.status) {
-        NotificationManager.removeAll();
         NotificationManager.error("Status is required.", "Error");
-        setIsSubmitting(false);
-        return;
-      }
-      if (!id && !data.img) {
-        NotificationManager.removeAll();
-        NotificationManager.error("Illustration image is required for a new illustration.", "Error");
         setIsSubmitting(false);
         return;
       }
@@ -150,7 +145,6 @@ const IllustrationImageAdd = () => {
       if (data.endTime) {
         const endDate = new Date(data.endTime);
         if (endDate <= now) {
-          NotificationManager.removeAll();
           NotificationManager.error("End date/time must be in the future.", "Error");
           setIsSubmitting(false);
           return;
@@ -160,7 +154,6 @@ const IllustrationImageAdd = () => {
         const startDate = new Date(data.startTime);
         const endDate = new Date(data.endTime);
         if (startDate >= endDate) {
-          NotificationManager.removeAll();
           NotificationManager.error("End date/time must be after start date/time.", "Error");
           setIsSubmitting(false);
           return;
@@ -170,10 +163,9 @@ const IllustrationImageAdd = () => {
       const form = new FormData();
       form.append("screenName", data.screenName);
       form.append("status", data.status);
-      // Only append startTime/endTime if they have values; otherwise, append null to clear them
       form.append("startTime", data.startTime || "");
       form.append("endTime", data.endTime || "");
-      if (data.img) {
+      if (data.img instanceof File) {
         form.append("img", data.img);
       }
       if (id) {
@@ -184,7 +176,6 @@ const IllustrationImageAdd = () => {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
-      NotificationManager.removeAll();
       NotificationManager.success(
         id ? "Illustration updated successfully." : "Illustration added successfully.",
         "Success"
@@ -194,33 +185,31 @@ const IllustrationImageAdd = () => {
       const errorMsg =
         error.response?.data?.ResponseMsg ||
         (id ? "Failed to update Illustration" : "Failed to add Illustration");
-        NotificationManager.removeAll();
       NotificationManager.error(errorMsg, "Error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
- useEffect(() => {
-  if (id) {
-    const fetchData = async () => {
-      try {
-        const response = await api.get(`/illustration/getillustrationbyid/${id}`);
-        if (response.data) {
-          setValue("screenName", response.data.screenName);
-          setValue("status", response.data.status.toString());
-          setValue("startTime", formatDateForInput(response.data.startTime));
-          setValue("endTime", formatDateForInput(response.data.endTime));
-          setImagePreview(response.data.img);
+  useEffect(() => {
+    if (id) {
+      const fetchData = async () => {
+        try {
+          const response = await api.get(`/illustration/getillustrationbyid/${id}`);
+          if (response.data) {
+            setValue("screenName", response.data.screenName);
+            setValue("status", response.data.status.toString());
+            setValue("startTime", formatDateForInput(response.data.startTime));
+            setValue("endTime", formatDateForInput(response.data.endTime));
+            setImagePreview(response.data.img);
+          }
+        } catch (error) {
+          NotificationManager.error("Failed to load illustration details.", "Error");
         }
-      } catch (error) {
-        NotificationManager.removeAll();
-        NotificationManager.error("Failed to load illustration details.", "Error");
-      }
-    };
-    fetchData();
-  }
-}, [id, setValue]);
+      };
+      fetchData();
+    }
+  }, [id, setValue]);
 
   return (
     <div className="bg-[#f7fbff] h-full">
@@ -236,9 +225,6 @@ const IllustrationImageAdd = () => {
                 </label>
                 <input
                   type="file"
-                  {...register("img", {
-                    required: !id ? "Illustration image is required" : false,
-                  })}
                   onChange={handleImageUpload}
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
                   className="w-full border border-gray-300 rounded p-2"
