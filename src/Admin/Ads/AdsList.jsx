@@ -30,38 +30,43 @@ const AdsList = () => {
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    async function fetchAds() {
-      setIsLoading(true);
-      setShowLoader(true);
-      try {
-        const response = await api.get("/ads/fetch-ads", {
-          withCredentials: true,
-        });
-        setAds(response.data);
-        setFilteredAds(response.data);
-        setTotalPages(Math.ceil(response.data.length / itemsPerPage));
-      } catch (error) {
-        console.error("Error fetching ads:", error);
-        NotificationManager.error("Error fetching ads", "Error");
-      } finally {
-        setIsLoading(false);
-        setTimeout(() => {
-          setShowLoader(false);
-        }, 2000);
-      }
+  const fetchAds = async () => {
+    setIsLoading(true);
+    setShowLoader(true);
+    try {
+      const response = await api.get("/ads/fetch-ads", {
+        withCredentials: true,
+      });
+      console.log("Fetched ads:", response.data);
+      setAds(response.data);
+      setFilteredAds(response.data);
+      setTotalPages(Math.ceil(response.data.length / itemsPerPage));
+    } catch (error) {
+      console.error("Error fetching ads:", error);
+      NotificationManager.error("Error fetching ads", "Error");
+    } finally {
+      setIsLoading(false);
+      setShowLoader(false);
     }
+  };
+
+  useEffect(() => {
     fetchAds();
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {}, 1000);
-    return () => clearTimeout(timer);
-  }, [location]);
+    if (location.state?.refresh) {
+      console.log("Refreshing ads due to navigation state");
+      fetchAds();
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const handleImageClick = (imageUrl) => {
-    setSelectedImage(imageUrl);
-    setShowModal(true);
+    if (imageUrl) {
+      setSelectedImage(imageUrl);
+      setShowModal(true);
+    }
   };
 
   const closeModal = () => {
@@ -80,57 +85,54 @@ const AdsList = () => {
   }, [showModal]);
 
   const handleSearch = (event) => {
-  const querySearch = event.target.value.toLowerCase();
-
-  const filteredData = ads.filter((ad) => {
-    const screenNameMatch = ad.screenName?.toLowerCase().includes(querySearch);
-    const planTypeMatch = ad.planType?.toLowerCase().includes(querySearch);
-    const startDateMatch = formatDateTime(ad.startDateTime)
-      .toLowerCase()
-      .includes(querySearch);
-    const endDateMatch = formatDateTime(ad.endDateTime)
-      .toLowerCase()
-      .includes(querySearch);
-    const statusMatch =
-      (ad.status === 1 ? "published" : "unpublished")
+    const querySearch = event.target.value.toLowerCase();
+    const filteredData = ads.filter((ad) => {
+      const screenNameMatch = ad.screenName?.toLowerCase().includes(querySearch);
+      const planTypeMatch = ad.planType?.toLowerCase().includes(querySearch);
+      const startDateMatch = formatDateTime(ad.startDateTime)
         .toLowerCase()
         .includes(querySearch);
+      const endDateMatch = formatDateTime(ad.endDateTime)
+        .toLowerCase()
+        .includes(querySearch);
+      const statusMatch =
+        (ad.status === 1 ? "published" : "unpublished")
+          .toLowerCase()
+          .includes(querySearch);
 
-    return (
-      screenNameMatch ||
-      planTypeMatch ||
-      startDateMatch ||
-      endDateMatch ||
-      statusMatch
-    );
-  });
+      return (
+        screenNameMatch ||
+        planTypeMatch ||
+        startDateMatch ||
+        endDateMatch ||
+        statusMatch
+      );
+    });
 
-  setFilteredAds(filteredData);
-  setPage(1);
-  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-};
+    setFilteredAds(filteredData);
+    setPage(1);
+    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+  };
 
-
-   const handleDelete = async (id) => {
+  const handleDelete = async (id) => {
     const success = await DeleteEntity("Ads", id);
     if (success) {
       const updatedAds = ads.filter((ad) => ad.id !== id);
       setAds(updatedAds);
       setFilteredAds(updatedAds);
       setTotalPages(Math.ceil(updatedAds.length / itemsPerPage));
-      // NotificationManager.success("Ad deleted successfully", "Success");
+      NotificationManager.success("Ad deleted successfully", "Success");
     }
   };
 
   const handleEdit = (id) => {
-    navigate("/admin/add-ads", { state: { id } });
+    navigate("/admin/add-ads", { state: { id, refresh: true } });
   };
 
   const handleToggleChange = async (id, currentStatus, field, startDateTime) => {
     const now = new Date();
     const startDate = startDateTime ? new Date(startDateTime) : null;
     if (startDate && startDate > now) {
-      NotificationManager.removeAll()
       NotificationManager.error(
         "Cannot toggle status for an ad with a future start date. It will be published automatically when the start time is reached.",
         "Error"
@@ -138,19 +140,14 @@ const AdsList = () => {
       return;
     }
     try {
-      await StatusEntity(
-        "Ads",
-        id,
-        currentStatus,
-        setFilteredAds,
-        filteredAds,
-        field
-      );
+      await StatusEntity("Ads", id, currentStatus, setFilteredAds, filteredAds, field);
       // NotificationManager.success("Ad status updated successfully", "Success");
     } catch (error) {
       console.error("Error toggling ad status:", error);
-      NotificationManager.removeAll()
-      NotificationManager.error(error.response?.data?.ResponseMsg || "Error updating ad status", "Error");
+      // NotificationManager.error(
+      //   error.response?.data?.ResponseMsg || "Error updating ad status",
+      //   "Error"
+      // );
     }
   };
 
@@ -158,21 +155,29 @@ const AdsList = () => {
     handleSort(filteredAds, key, setSortConfig, setFilteredAds);
   };
 
-  const renderImage = (img) => (
-    <img
-      src={img || "https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg"}
-      alt="Ad"
-      className="w-10 h-10 object-cover rounded-full cursor-pointer"
-      onError={(e) =>
-        (e.target.src =
-          "https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg")
-      }
-      onClick={() => handleImageClick(img)}
-      height={50}
-      width={50}
-      loading="lazy"
-    />
-  );
+  const renderImage = (img) => {
+    const defaultImage =
+      "https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg";
+    const imageSrc = img
+      ? encodeURI(img.replace(/%(?![0-9A-Fa-f]{2})/g, "%25")) + `?t=${Date.now()}`
+      : defaultImage;
+
+    return (
+      <img
+        src={imageSrc}
+        alt="Ad"
+        className="w-10 h-10 object-cover rounded-full cursor-pointer"
+        onError={(e) => {
+          console.warn(`Failed to load image: ${img}`);
+          e.target.src = defaultImage;
+        }}
+        onClick={() => img && handleImageClick(img)}
+        height={50}
+        width={50}
+        loading="lazy"
+      />
+    );
+  };
 
   const renderStatus = (status, id, startDateTime) => {
     const statusLabel = status === 1 ? "Published" : "Unpublished";
@@ -210,9 +215,8 @@ const AdsList = () => {
     });
   };
 
-  const columns = ["S.No.", "Ad Image", "Screen Name", "Plan Type", "Start Date", "End Date","Status"];
-
-  const fields = ["index", "image", "screenName", "planType", "startDateTime", "endDateTime","status"];
+  const columns = ["S.No.", "Ad Image", "Screen Name", "Plan Type", "Start Date", "End Date", "Status"];
+  const fields = ["index", "image", "screenName", "planType", "startDateTime", "endDateTime", "status"];
 
   const tableData = filteredAds
     .slice((page - 1) * itemsPerPage, page * itemsPerPage)
@@ -272,13 +276,14 @@ const AdsList = () => {
               <FaTimes size={24} />
             </button>
             <img
-              src={selectedImage}
+              src={`${encodeURI(selectedImage.replace(/%(?![0-9A-Fa-f]{2})/g, "%25"))}?t=${Date.now()}`}
               alt="Enlarged Ad"
               className="max-w-full max-h-[70vh] object-contain"
-              onError={(e) =>
-                (e.target.src =
-                  "https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg")
-              }
+              onError={(e) => {
+                console.warn(`Failed to load enlarged image: ${selectedImage}`);
+                e.target.src =
+                  "https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg";
+              }}
             />
           </div>
         </div>

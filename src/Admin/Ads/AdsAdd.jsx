@@ -26,6 +26,7 @@ const AdsAdd = () => {
     planType: "",
     status: "",
     img: null,
+    imageFile: null,
     startDateTime: "",
     endDateTime: "",
     couponPercentage: "",
@@ -50,69 +51,69 @@ const AdsAdd = () => {
     { value: "1", label: "Published" },
   ];
 
-   const customStyles = {
-  control: (base, { isFocused }) => ({
-    ...base,
-    border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
-    boxShadow: "none",
-    borderRadius: "5px",
-    padding: "0px",
-    fontSize: "12px",
-    height: "42px",
-    transition: "border-color 0.2s ease-in-out",
-    "&:hover": {
-      border: "2px solid #393185",
-    },
-    zIndex: 1,
-  }),
-  menu: (base) => ({
-    ...base,
-    zIndex: 10001,
-  }),
-  menuPortal: (base) => ({
-    ...base,
-    zIndex: 10001,
-  }),
-  option: (base, { isFocused, isSelected }) => ({
-    ...base,
-    backgroundColor: isSelected ? "#B0B0B0" : isFocused ? "#393185" : "white",
-    color: isSelected ? "white" : isFocused ? "white" : "#757575",
-    fontSize: "12px",
-  }),
-  singleValue: (base) => ({
-    ...base,
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#393185",
-  }),
-  placeholder: (base) => ({
-    ...base,
-    color: "#393185",
-    fontSize: "12px",
-  }),
-};
+  const customStyles = {
+    control: (base, { isFocused }) => ({
+      ...base,
+      border: isFocused ? "2px solid #393185" : "1px solid #B0B0B0",
+      boxShadow: "none",
+      borderRadius: "5px",
+      padding: "0px",
+      fontSize: "12px",
+      height: "42px",
+      transition: "border-color 0.2s ease-in-out",
+      "&:hover": {
+        border: "2px solid #393185",
+      },
+      zIndex: 1,
+    }),
+    menu: (base) => ({
+      ...base,
+      zIndex: 10001,
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 10001,
+    }),
+    option: (base, { isFocused, isSelected }) => ({
+      ...base,
+      backgroundColor: isSelected ? "#B0B0B0" : isFocused ? "#393185" : "white",
+      color: isSelected ? "white" : isFocused ? "white" : "#757575",
+      fontSize: "12px",
+    }),
+    singleValue: (base) => ({
+      ...base,
+      fontSize: "12px",
+      fontWeight: "600",
+      color: "#393185",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#393185",
+      fontSize: "12px",
+    }),
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 1 * 1024 * 1024) {
-        setError("img", {
+        setError("imageFile", {
           type: "manual",
           message: "Image size must be 1MB or less",
         });
         e.target.value = "";
-        setFormData({ ...formData, img: null });
+        setFormData({ ...formData, imageFile: null, img: null });
         return;
       }
-      clearErrors("img");
+      clearErrors("imageFile");
       const imgURL = URL.createObjectURL(file);
-      setFormData({ ...formData, img: imgURL, file });
+      setFormData({ ...formData, imageFile: file, img: imgURL });
+      setValue("imageFile", file);
     }
   };
 
   const handleSelectChange = (field, selectedOption) => {
-    const newFormData = { ...formData, [field]: selectedOption.value };
-    setFormData(newFormData);
+    setFormData({ ...formData, [field]: selectedOption.value });
     setValue(field, selectedOption.value);
   };
 
@@ -142,7 +143,7 @@ const AdsAdd = () => {
         setIsSubmitting(false);
         return;
       }
-      if (!id && !data.img) {
+      if (!id && !formData.imageFile) {
         NotificationManager.removeAll();
         NotificationManager.error("Ad image is required for new ads.", "Error");
         setIsSubmitting(false);
@@ -174,38 +175,34 @@ const AdsAdd = () => {
       form.append("screenName", formData.screenName);
       form.append("planType", formData.planType);
       form.append("status", formData.status);
-      if (formData.startDateTime) {
-        form.append("startDateTime", formData.startDateTime);
+      if (formData.startDateTime) form.append("startDateTime", formData.startDateTime);
+      if (formData.endDateTime) form.append("endDateTime", formData.endDateTime);
+      if (formData.couponPercentage) form.append("couponPercentage", formData.couponPercentage);
+      if (formData.imageFile) {
+        console.log("Appending image file:", formData.imageFile);
+        form.append("img", formData.imageFile);
       }
-      if (formData.endDateTime) {
-        form.append("endDateTime", formData.endDateTime);
-      }
-      if (formData.couponPercentage) {
-        form.append("couponPercentage", formData.couponPercentage);
-      }
-      if (data.img && data.img[0]) {
-        form.append("img", data.img[0]);
-      }
-      if (id) {
-        form.append("id", id);
+      if (id) form.append("id", id);
+
+      for (let [key, value] of form.entries()) {
+        console.log(`FormData: ${key} = ${value}`);
       }
 
       const response = await api.post("/ads/upsert-ads", form, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
-
       NotificationManager.removeAll();
       NotificationManager.success(
         id ? "Ad updated successfully." : "Ad added successfully.",
         "Success"
       );
-      setTimeout(() => navigate("/admin/list-ads"), 2000);
+      setTimeout(() => navigate("/admin/list-ads", { state: { refresh: true } }), 2000);
     } catch (error) {
+      console.error("Submit error:", error);
       const errorMsg =
         error.response?.data?.ResponseMsg ||
         (id ? "Failed to update ad" : "Failed to add ad");
-      NotificationManager.removeAll();
       NotificationManager.error(errorMsg, "Error");
     } finally {
       setIsSubmitting(false);
@@ -218,27 +215,27 @@ const AdsAdd = () => {
         try {
           const response = await api.get(`/ads/getadsbyid/${id}`);
           if (response.data) {
-            const convertToIST = (date) => {
+            const convertToDateTimeLocal = (date) => {
               if (!date) return "";
+              // Parse UTC date from database
               const utcDate = new Date(date);
+              // Convert to IST by adding 5.5 hours
               const istOffset = 5.5 * 60 * 60 * 1000;
               const istDate = new Date(utcDate.getTime() + istOffset);
-              const year = istDate.getFullYear();
-              const month = String(istDate.getMonth() + 1).padStart(2, "0");
-              const day = String(istDate.getDate()).padStart(2, "0");
-              const hours = String(istDate.getHours()).padStart(2, "0");
-              const minutes = String(istDate.getMinutes()).padStart(2, "0");
-              return `${year}-${month}-${day}T${hours}:${minutes}`;
+              // Format as UTC to trick browser into displaying IST time
+              const utcEquivalent = new Date(istDate.getTime() - istDate.getTimezoneOffset() * 60 * 1000);
+              return utcEquivalent.toISOString().slice(0, 16);
             };
 
-            const startDateTime = convertToIST(response.data.startDateTime);
-            const endDateTime = convertToIST(response.data.endDateTime);
+            const startDateTime = convertToDateTimeLocal(response.data.startDateTime);
+            const endDateTime = convertToDateTimeLocal(response.data.endDateTime);
 
             setFormData({
               screenName: response.data.screenName,
               planType: response.data.planType,
               status: response.data.status.toString(),
               img: response.data.img,
+              imageFile: null,
               startDateTime,
               endDateTime,
               couponPercentage: response.data.couponPercentage || "",
@@ -251,7 +248,6 @@ const AdsAdd = () => {
             setValue("couponPercentage", response.data.couponPercentage || "");
           }
         } catch (error) {
-          NotificationManager.removeAll();
           NotificationManager.error("Failed to load ad details.", "Error");
         }
       };
@@ -262,9 +258,9 @@ const AdsAdd = () => {
   return (
     <div className="bg-[#f7fbff] h-full">
       <Header />
-      <SimpleHeader name={"Ads Management"} />
+      <SimpleHeader name="Ads Management" />
       <div className="container px-6">
-        <div className="bg-white max-h-[70vh] w-[76vw] overflow-scroll rounded-xl border border-[#EAE5FF] py-4 px-6">
+        <div className="bg-white max-h-[70vh] w-[76vw] overflow-auto rounded-xl border border-[#EAE5FF] py-4 px-6">
           <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg">
             <div className="flex flex-col w-full gap-y-4">
               <div className="flex flex-col w-full">
@@ -273,9 +269,8 @@ const AdsAdd = () => {
                 </label>
                 <input
                   type="file"
-                  name="img"
-                  {...register("img", {
-                    required: !id ? "Ad image is required" : false,
+                  {...register("imageFile", {
+                    required: !id && !formData.img ? "Ad image is required" : false,
                   })}
                   onChange={handleImageUpload}
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
@@ -283,14 +278,16 @@ const AdsAdd = () => {
                   disabled={isSubmitting}
                 />
                 {formData.img && (
-                  <img
-                    src={formData.img}
-                    alt="Preview"
-                    className="w-16 h-16 mt-2 rounded"
-                  />
+                  <div className="mt-2">
+                    <img
+                      src={formData.img}
+                      alt="Preview"
+                      className="w-16 h-16 rounded"
+                    />
+                  </div>
                 )}
-                {errors.img && (
-                  <p className="text-red-500 text-sm">{errors.img.message}</p>
+                {errors.imageFile && (
+                  <p className="text-red-500 text-sm">{errors.imageFile.message}</p>
                 )}
               </div>
 
@@ -386,7 +383,6 @@ const AdsAdd = () => {
                   </label>
                   <input
                     type="number"
-                    name="couponPercentage"
                     {...register("couponPercentage")}
                     value={formData.couponPercentage}
                     onChange={(e) =>
@@ -449,39 +445,34 @@ const AdsAdd = () => {
             </div>
 
             <button
-  type="submit"
-  className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
-    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-  }`}
-  disabled={isSubmitting}
->
-  {isSubmitting ? (
-    <svg
-      className="animate-spin h-5 w-5 mr-2 text-white"
-      viewBox="0 0 24 24"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
-  ) : null}
-  {isSubmitting
-    ? "Submitting..."
-    : id
-    ? "Update Ad"
-    : "Add Ad"}
-</button>
-
+              type="submit"
+              className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : null}
+              {isSubmitting ? "Submitting..." : id ? "Update Ad" : "Add Ad"}
+            </button>
           </form>
         </div>
       </div>
