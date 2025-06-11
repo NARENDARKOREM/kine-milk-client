@@ -8,6 +8,7 @@ import api from "../../utils/api";
 import Select from "react-select";
 import { AiOutlineDown } from "react-icons/ai";
 import { useForm } from "react-hook-form";
+import moment from "moment-timezone"; // Add moment-timezone for consistent handling
 
 const IllustrationImageAdd = () => {
   const {
@@ -114,82 +115,85 @@ const IllustrationImageAdd = () => {
 
   const formatDateForInput = (date) => {
     if (!date) return "";
-    const d = new Date(date);
-    const pad = (n) => n.toString().padStart(2, "0");
-    const year = d.getFullYear();
-    const month = pad(d.getMonth() + 1);
-    const day = pad(d.getDate());
-    const hours = pad(d.getHours());
-    const minutes = pad(d.getMinutes());
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    // Convert UTC date to IST for display
+    return moment.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DDTHH:mm");
   };
 
-  const onSubmit = async (data) => {
-    console.log("Form Data:", data);
-    console.log("Image is File:", data.img instanceof File);
-    setIsSubmitting(true);
-    NotificationManager.removeAll();
-    try {
-      if (!data.screenName) {
-        NotificationManager.error("Screen name is required.", "Error");
-        setIsSubmitting(false);
-        return;
-      }
-      if (!data.status) {
-        NotificationManager.error("Status is required.", "Error");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const now = new Date();
-      if (data.endTime) {
-        const endDate = new Date(data.endTime);
-        if (endDate <= now) {
-          NotificationManager.error("End date/time must be in the future.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-      if (data.startTime && data.endTime) {
-        const startDate = new Date(data.startTime);
-        const endDate = new Date(data.endTime);
-        if (startDate >= endDate) {
-          NotificationManager.error("End date/time must be after start date/time.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      const form = new FormData();
-      form.append("screenName", data.screenName);
-      form.append("status", data.status);
-      form.append("startTime", data.startTime || "");
-      form.append("endTime", data.endTime || "");
-      if (data.img instanceof File) {
-        form.append("img", data.img);
-      }
-      if (id) {
-        form.append("id", id);
-      }
-
-      const response = await api.post("/illustration/upsert-illustration", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
-      NotificationManager.success(
-        id ? "Illustration updated successfully." : "Illustration added successfully.",
-        "Success"
-      );
-      setTimeout(() => navigate("/admin/list-illustration"), 2000);
-    } catch (error) {
-      const errorMsg =
-        error.response?.data?.ResponseMsg ||
-        (id ? "Failed to update Illustration" : "Failed to add Illustration");
-      NotificationManager.error(errorMsg, "Error");
-    } finally {
+  // In onSubmit (IllustrationImageAdd.js)
+const onSubmit = async (data) => {
+  console.log("Form Data:", data);
+  console.log("Image is File:", data.img instanceof File);
+  setIsSubmitting(true);
+  NotificationManager.removeAll();
+  try {
+    if (!data.screenName) {
+      NotificationManager.error("Screen name is required.", "Error");
       setIsSubmitting(false);
+      return;
     }
-  };
+    if (!data.status) {
+      NotificationManager.error("Status is required.", "Error");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const now = moment().tz("Asia/Kolkata").toDate();
+    if (data.endTime) {
+      const endDate = moment.tz(data.endTime, "Asia/Kolkata").toDate();
+      if (endDate <= now) {
+        NotificationManager.error("End date/time must be in the future.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+    if (data.startTime && data.endTime) {
+      const startDate = moment.tz(data.startTime, "Asia/Kolkata").toDate();
+      const endDate = moment.tz(data.endTime, "Asia/Kolkata").toDate();
+      if (startDate >= endDate) {
+        NotificationManager.error("End date/time must be after start date/time.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    const form = new FormData();
+    form.append("screenName", data.screenName);
+    form.append("status", data.status);
+    const startTimeFormatted = data.startTime
+      ? moment.tz(data.startTime, "Asia/Kolkata").toISOString()
+      : "";
+    const endTimeFormatted = data.endTime
+      ? moment.tz(data.endTime, "Asia/Kolkata").toISOString()
+      : "";
+    console.log("Submitted startTime:", startTimeFormatted);
+    console.log("Submitted endTime:", endTimeFormatted);
+    form.append("startTime", startTimeFormatted);
+    form.append("endTime", endTimeFormatted);
+    if (data.img instanceof File) {
+      form.append("img", data.img);
+    }
+    if (id) {
+      form.append("id", id);
+    }
+
+    const response = await api.post("/illustration/upsert-illustration", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+    });
+    NotificationManager.success(
+      id ? "Illustration updated successfully." : "Illustration added successfully.",
+      "Success"
+    );
+    setTimeout(() => navigate("/admin/list-illustration"), 2000);
+  } catch (error) {
+    const errorMsg =
+      error.response?.data?.ResponseMsg ||
+      (id ? "Failed to update Illustration" : "Failed to add Illustration");
+    NotificationManager.error(errorMsg, "Error");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   useEffect(() => {
     if (id) {
@@ -305,7 +309,7 @@ const IllustrationImageAdd = () => {
                     type="datetime-local"
                     {...register("startTime")}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={new Date().toISOString().slice(0, 16)}
+                    min={moment().tz("Asia/Kolkata").format("YYYY-MM-DDTHH:mm")}
                     disabled={isSubmitting}
                   />
                   {errors.startTime && (
@@ -321,7 +325,11 @@ const IllustrationImageAdd = () => {
                     type="datetime-local"
                     {...register("endTime")}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={watch("startTime") || new Date().toISOString().slice(0, 16)}
+                    min={
+                      watch("startTime")
+                        ? moment.tz(watch("startTime"), "Asia/Kolkata").format("YYYY-MM-DDTHH:mm")
+                        : moment().tz("Asia/Kolkata").format("YYYY-MM-DDTHH:mm")
+                    }
                     disabled={isSubmitting}
                   />
                   {errors.endTime && (
