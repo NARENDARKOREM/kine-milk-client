@@ -9,8 +9,13 @@ export const DeleteEntity = async (entity, id) => {
   const BASE_URL= "https://kine-milk-server-six.vercel.app"
   const token = Cookies.get("u_token");
 
-  // Common headers for authentication
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  console.log(`Deleting ${entity} with ID ${id}, Token: ${token}`); // Debug token
+  if (!token) {
+    NotificationManager.error("Authentication token is missing. Please log in again.");
+    throw new Error("Missing authentication token");
+  }
+
+  const headers = { Authorization: `Bearer ${token}` };
 
   try {
     const result = await Swal.fire({
@@ -52,27 +57,28 @@ export const DeleteEntity = async (entity, id) => {
         Unit: `/units/delete/${id}`,
       };
 
-      if (!endpoints[entity]) {
+      const endpoint = endpoints[entity];
+      if (!endpoint) {
+        console.error(`Invalid entity: ${entity}`);
         throw new Error(`Unknown entity: ${entity}`);
       }
 
-      await axios.delete(`${BASE_URL}${endpoints[entity]}`, {
+      const response = await axios.delete(`${BASE_URL}${endpoint}`, {
         withCredentials: true,
         headers,
       });
 
-      NotificationManager.removeAll();
+      console.log("Server response:", response.data);
       NotificationManager.success(`${entity} deleted successfully!`);
-      return { success: true };
+      return true; // Return true for successful deletion
     } else {
-      NotificationManager.removeAll();
+      console.log(`Deletion of ${entity} ${id} cancelled`);
       NotificationManager.info(`${entity} deletion was cancelled.`);
-      return { success: false, cancelled: true };
+      return false; // Return false for cancellation
     }
   } catch (error) {
-    console.error(error);
-    NotificationManager.removeAll();
-    NotificationManager.error(`Failed to delete ${entity}.`);
-    throw error; // Re-throw the error to let the caller handle it
+    console.error(`Failed to delete ${entity}:`, error.response?.data || error.message);
+    NotificationManager.error(`Failed to delete ${entity}: ${error.response?.data?.message || error.message}`);
+    throw error; // Re-throw error for caller to handle
   }
 };

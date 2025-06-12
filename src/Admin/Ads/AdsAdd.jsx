@@ -120,55 +120,74 @@ const AdsAdd = () => {
   const handleDateChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
     setValue(field, value);
+
+    // Real-time validation for date fields
+    const now = new Date().toISOString().slice(0, 16);
+    if (field === "startDateTime" && value && value < now) {
+      setError("startDateTime", {
+        type: "manual",
+        message: "Start date/time cannot be in the past",
+      });
+    } else {
+      clearErrors("startDateTime");
+    }
+
+    if (field === "endDateTime" && value) {
+      if (value < now) {
+        setError("endDateTime", {
+          type: "manual",
+          message: "End date/time cannot be in the past",
+        });
+      } else if (formData.startDateTime && value <= formData.startDateTime) {
+        setError("endDateTime", {
+          type: "manual",
+          message: "End date/time must be after start date/time",
+        });
+      } else {
+        clearErrors("endDateTime");
+      }
+    }
   };
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
       if (!formData.screenName) {
-        NotificationManager.removeAll();
         NotificationManager.error("Screen name is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!formData.planType) {
-        NotificationManager.removeAll();
         NotificationManager.error("Plan type is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!formData.status) {
-        NotificationManager.removeAll();
         NotificationManager.error("Status is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!id && !formData.imageFile) {
-        NotificationManager.removeAll();
         NotificationManager.error("Ad image is required for new ads.", "Error");
         setIsSubmitting(false);
         return;
       }
 
-      const now = new Date();
-      if (formData.endDateTime) {
-        const endDate = new Date(formData.endDateTime);
-        if (endDate <= now) {
-          NotificationManager.removeAll();
-          NotificationManager.error("End date/time must be in the future.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
+      const now = new Date().toISOString();
+      if (formData.startDateTime && formData.startDateTime < now) {
+        NotificationManager.error("Start date/time cannot be in the past.", "Error");
+        setIsSubmitting(false);
+        return;
       }
-      if (formData.startDateTime && formData.endDateTime) {
-        const startDate = new Date(formData.startDateTime);
-        const endDate = new Date(formData.endDateTime);
-        if (startDate >= endDate) {
-          NotificationManager.removeAll();
-          NotificationManager.error("End date/time must be after start date/time.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
+      if (formData.endDateTime && formData.endDateTime < now) {
+        NotificationManager.error("End date/time cannot be in the past.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+      if (formData.startDateTime && formData.endDateTime && formData.startDateTime >= formData.endDateTime) {
+        NotificationManager.error("End date/time must be after start date/time.", "Error");
+        setIsSubmitting(false);
+        return;
       }
 
       const form = new FormData();
@@ -179,20 +198,14 @@ const AdsAdd = () => {
       if (formData.endDateTime) form.append("endDateTime", formData.endDateTime);
       if (formData.couponPercentage) form.append("couponPercentage", formData.couponPercentage);
       if (formData.imageFile) {
-        console.log("Appending image file:", formData.imageFile);
         form.append("img", formData.imageFile);
       }
       if (id) form.append("id", id);
-
-      for (let [key, value] of form.entries()) {
-        console.log(`FormData: ${key} = ${value}`);
-      }
 
       const response = await api.post("/ads/upsert-ads", form, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
-      NotificationManager.removeAll();
       NotificationManager.success(
         id ? "Ad updated successfully." : "Ad added successfully.",
         "Success"
@@ -215,36 +228,21 @@ const AdsAdd = () => {
         try {
           const response = await api.get(`/ads/getadsbyid/${id}`);
           if (response.data) {
-            const convertToDateTimeLocal = (date) => {
-              if (!date) return "";
-              // Parse UTC date from database
-              const utcDate = new Date(date);
-              // Convert to IST by adding 5.5 hours
-              const istOffset = 5.5 * 60 * 60 * 1000;
-              const istDate = new Date(utcDate.getTime() + istOffset);
-              // Format as UTC to trick browser into displaying IST time
-              const utcEquivalent = new Date(istDate.getTime() - istDate.getTimezoneOffset() * 60 * 1000);
-              return utcEquivalent.toISOString().slice(0, 16);
-            };
-
-            const startDateTime = convertToDateTimeLocal(response.data.startDateTime);
-            const endDateTime = convertToDateTimeLocal(response.data.endDateTime);
-
             setFormData({
               screenName: response.data.screenName,
               planType: response.data.planType,
               status: response.data.status.toString(),
               img: response.data.img,
               imageFile: null,
-              startDateTime,
-              endDateTime,
+              startDateTime: response.data.startDateTime || "",
+              endDateTime: response.data.endDateTime || "",
               couponPercentage: response.data.couponPercentage || "",
             });
             setValue("screenName", response.data.screenName);
             setValue("planType", response.data.planType);
             setValue("status", response.data.status.toString());
-            setValue("startDateTime", startDateTime);
-            setValue("endDateTime", endDateTime);
+            setValue("startDateTime", response.data.startDateTime || "");
+            setValue("endDateTime", response.data.endDateTime || "");
             setValue("couponPercentage", response.data.couponPercentage || "");
           }
         } catch (error) {
@@ -254,6 +252,19 @@ const AdsAdd = () => {
       fetchData();
     }
   }, [id, setValue]);
+
+  // Get current date/time in the format required for datetime-local input
+  const getMinDateTime = () => {
+    return new Date().toISOString().slice(0, 16);
+  };
+
+  // Get minimum end date/time based on startDateTime
+  const getMinEndDateTime = () => {
+    if (!formData.startDateTime) return getMinDateTime();
+    const startDate = new Date(formData.startDateTime);
+    startDate.setMinutes(startDate.getMinutes() + 1); // Ensure end date is at least 1 minute after start
+    return startDate.toISOString().slice(0, 16);
+  };
 
   return (
     <div className="bg-[#f7fbff] h-full">
@@ -274,7 +285,7 @@ const AdsAdd = () => {
                   })}
                   onChange={handleImageUpload}
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
-                  className="w-full border border-gray-300 rounded p-2"
+                  className="w-fullstaple border border-gray-300 rounded p-2"
                   disabled={isSubmitting}
                 />
                 {formData.img && (
@@ -410,7 +421,7 @@ const AdsAdd = () => {
                       handleDateChange("startDateTime", e.target.value)
                     }
                     className="w-full border border-gray-300 rounded p-2"
-                    min={new Date().toISOString().slice(0, 16)}
+                    min={getMinDateTime()}
                     disabled={isSubmitting}
                   />
                   {errors.startDateTime && (
@@ -432,7 +443,7 @@ const AdsAdd = () => {
                       handleDateChange("endDateTime", e.target.value)
                     }
                     className="w-full border border-gray-300 rounded p-2"
-                    min={formData.startDateTime || new Date().toISOString().slice(0, 16)}
+                    min={getMinEndDateTime()}
                     disabled={isSubmitting}
                   />
                   {errors.endDateTime && (

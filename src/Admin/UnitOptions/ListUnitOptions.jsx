@@ -66,16 +66,22 @@ const ListUnitOptions = () => {
     handleSort(filteredUnits, key, sortConfig, setSortConfig, setFilteredUnits);
   };
 
-  const handleDelete = async (id) => {
-    const success = await DeleteEntity('Unit', id);
-    if (success) {
+const handleDelete = async (id) => {
+  try {
+    const result = await DeleteEntity('Unit', id);
+    if (result.success) {
       const updatedUnits = units.filter((u) => u.id !== id);
       setUnits(updatedUnits);
       setFilteredUnits(updatedUnits);
       setTotalPages(Math.ceil(updatedUnits.length / itemsPerPage));
-      // NotificationManager.success('Unit deleted successfully', 'Success');
+    } else {
+      console.log(`Deletion of Unit ${id} was cancelled or failed`);
     }
-  };
+  } catch (error) {
+    console.error('Deletion error:', error);
+    // Error notification is already handled in DeleteEntity
+  }
+};
 
   const handleEdit = (id) => {
     const unit = units.find((u) => u.id === id);
