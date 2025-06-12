@@ -200,17 +200,52 @@ const IllustrationImageAdd = () => {
         try {
           const response = await api.get(`/illustration/getillustrationbyid/${id}`);
           if (response.data) {
+            const formatDateTime = (dateTime) => {
+              if (!dateTime) return "";
+              // Convert YYYY-MM-DD HH:mm:ss to YYYY-MM-DDTHH:mm
+              const date = new Date(dateTime);
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+              const hours = String(date.getHours()).padStart(2, '0');
+              const minutes = String(date.getMinutes()).padStart(2, '0');
+              return `${year}-${month}-${day}T${hours}:${minutes}`;
+            };
+
+            const startTime = formatDateTime(response.data.startTime);
+            const endTime = formatDateTime(response.data.endTime);
+
+            // Use IST for current time
+            const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+              .replace(/,/, '')
+              .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
+                (match, month, day, year, hour, minute, second, period) => {
+                  const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
+                    period === 'AM' && hour === '12' ? 0 : parseInt(hour);
+                  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
+                });
+
+            // Validate dates
+            if (endTime && endTime <= now) {
+              NotificationManager.error("Fetched end date/time is not in the future.", "Error");
+              return;
+            }
+            if (startTime && endTime && startTime >= endTime) {
+              NotificationManager.error("Fetched end date/time must be after start date/time.", "Error");
+              return;
+            }
+
             setFormData({
               screenName: response.data.screenName,
               status: response.data.status.toString(),
-              startTime: response.data.startTime || "",
-              endTime: response.data.endTime || "",
+              startTime,
+              endTime,
               img: response.data.img,
             });
             setValue("screenName", response.data.screenName);
             setValue("status", response.data.status.toString());
-            setValue("startTime", response.data.startTime || "");
-            setValue("endTime", response.data.endTime || "");
+            setValue("startTime", startTime);
+            setValue("endTime", endTime);
           }
         } catch (error) {
           NotificationManager.removeAll();
