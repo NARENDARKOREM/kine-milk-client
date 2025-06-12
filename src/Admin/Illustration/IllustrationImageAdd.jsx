@@ -134,16 +134,7 @@ const IllustrationImageAdd = () => {
         return;
       }
 
-      // Use IST for current time
-      const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
-        .replace(/,/, '')
-        .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
-          (match, month, day, year, hour, minute, second, period) => {
-            const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
-              period === 'AM' && hour === '12' ? 0 : parseInt(hour);
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
-          });
-
+      const now = new Date().toISOString();
       if (formData.endTime && formData.endTime <= now) {
         NotificationManager.error("End date/time must be in the future.", "Error");
         setIsSubmitting(false);
@@ -170,9 +161,6 @@ const IllustrationImageAdd = () => {
       if (id) {
         form.append("id", id);
       }
-      console.log("Form Data:", [...form.entries()]); // Log FormData entries
-      console.log("startTime:", formData.startTime);
-      console.log("endTime:", formData.endTime);
 
       const response = await api.post("/illustration/upsert-illustration", form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -200,50 +188,17 @@ const IllustrationImageAdd = () => {
         try {
           const response = await api.get(`/illustration/getillustrationbyid/${id}`);
           if (response.data) {
-            const formatDateTime = (dateTime) => {
-  if (!dateTime) return "";
-  // Parse the IST date string (YYYY-MM-DD HH:mm:ss)
-  const [datePart, timePart] = dateTime.split(" ");
-  const [year, month, day] = datePart.split("-").map(Number);
-  const [hours, minutes] = timePart.split(":").map(Number);
-  // Format for datetime-local input (YYYY-MM-DDTHH:mm)
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-};
-
-            const startTime = formatDateTime(response.data.startTime);
-            const endTime = formatDateTime(response.data.endTime);
-
-            // Use IST for current time
-            const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
-              .replace(/,/, '')
-              .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
-                (match, month, day, year, hour, minute, second, period) => {
-                  const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
-                    period === 'AM' && hour === '12' ? 0 : parseInt(hour);
-                  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
-                });
-
-            // Validate dates
-            if (endTime && endTime <= now) {
-              NotificationManager.error("Fetched end date/time is not in the future.", "Error");
-              return;
-            }
-            if (startTime && endTime && startTime >= endTime) {
-              NotificationManager.error("Fetched end date/time must be after start date/time.", "Error");
-              return;
-            }
-
             setFormData({
               screenName: response.data.screenName,
               status: response.data.status.toString(),
-              startTime,
-              endTime,
+              startTime: response.data.startTime || "",
+              endTime: response.data.endTime || "",
               img: response.data.img,
             });
             setValue("screenName", response.data.screenName);
             setValue("status", response.data.status.toString());
-            setValue("startTime", startTime);
-            setValue("endTime", endTime);
+            setValue("startTime", response.data.startTime || "");
+            setValue("endTime", response.data.endTime || "");
           }
         } catch (error) {
           NotificationManager.removeAll();
@@ -353,17 +308,10 @@ const IllustrationImageAdd = () => {
                   <input
                     type="datetime-local"
                     {...register("startTime")}
-                    value={formData.startTime || ""}
+                    value={formData.startTime}
                     onChange={(e) => handleTimeChange("startTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
-                      .replace(/,/, '')
-                      .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
-                        (match, month, day, year, hour, minute, second, period) => {
-                          const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
-                            period === 'AM' && hour === '12' ? 0 : parseInt(hour);
-                          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
-                        })}
+                    min={new Date().toISOString().slice(0, 16)}
                     disabled={isSubmitting}
                   />
                   {errors.startTime && (
@@ -378,17 +326,10 @@ const IllustrationImageAdd = () => {
                   <input
                     type="datetime-local"
                     {...register("endTime")}
-                    value={formData.endTime || ""}
+                    value={formData.endTime}
                     onChange={(e) => handleTimeChange("endTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={formData.startTime || new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
-                      .replace(/,/, '')
-                      .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
-                        (match, month, day, year, hour, minute, second, period) => {
-                          const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
-                            period === 'AM' && hour === '12' ? 0 : parseInt(hour);
-                          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
-                        })}
+                    min={formData.startTime || new Date().toISOString().slice(0, 16)}
                     disabled={isSubmitting}
                   />
                   {errors.endTime && (
@@ -400,8 +341,9 @@ const IllustrationImageAdd = () => {
 
             <button
               type="submit"
-              className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+              className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -427,8 +369,8 @@ const IllustrationImageAdd = () => {
               {isSubmitting
                 ? "Submitting..."
                 : id
-                  ? "Update Illustration"
-                  : "Add Illustration"}
+                ? "Update Illustration"
+                : "Add Illustration"}
             </button>
           </form>
         </div>
@@ -438,4 +380,4 @@ const IllustrationImageAdd = () => {
   );
 };
 
-export default IllustrationImageAdd; 
+export default IllustrationImageAdd;
