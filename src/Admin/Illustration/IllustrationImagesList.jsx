@@ -38,6 +38,7 @@ const IllustrationImagesList = () => {
         const response = await api.get("/illustration/fetch-illustrations", {
           withCredentials: true,
         });
+        console.log(response.data);
         setIllustrations(response.data);
         setFilteredIllustrations(response.data);
         setTotalPages(Math.ceil(response.data.length / itemsPerPage));
