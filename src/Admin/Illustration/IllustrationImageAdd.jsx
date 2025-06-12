@@ -134,7 +134,16 @@ const IllustrationImageAdd = () => {
         return;
       }
 
-      const now = new Date().toISOString();
+      // Use IST for current time
+      const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+        .replace(/,/, '')
+        .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
+          (match, month, day, year, hour, minute, second, period) => {
+            const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
+              period === 'AM' && hour === '12' ? 0 : parseInt(hour);
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
+          });
+
       if (formData.endTime && formData.endTime <= now) {
         NotificationManager.error("End date/time must be in the future.", "Error");
         setIsSubmitting(false);
@@ -161,6 +170,9 @@ const IllustrationImageAdd = () => {
       if (id) {
         form.append("id", id);
       }
+      console.log("Form Data:", [...form.entries()]); // Log FormData entries
+      console.log("startTime:", formData.startTime);
+      console.log("endTime:", formData.endTime);
 
       const response = await api.post("/illustration/upsert-illustration", form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -308,10 +320,17 @@ const IllustrationImageAdd = () => {
                   <input
                     type="datetime-local"
                     {...register("startTime")}
-                    value={formData.startTime}
+                    value={formData.startTime || ""}
                     onChange={(e) => handleTimeChange("startTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={new Date().toISOString().slice(0, 16)}
+                    min={new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+                      .replace(/,/, '')
+                      .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
+                        (match, month, day, year, hour, minute, second, period) => {
+                          const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
+                            period === 'AM' && hour === '12' ? 0 : parseInt(hour);
+                          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
+                        })}
                     disabled={isSubmitting}
                   />
                   {errors.startTime && (
@@ -326,10 +345,17 @@ const IllustrationImageAdd = () => {
                   <input
                     type="datetime-local"
                     {...register("endTime")}
-                    value={formData.endTime}
+                    value={formData.endTime || ""}
                     onChange={(e) => handleTimeChange("endTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={formData.startTime || new Date().toISOString().slice(0, 16)}
+                    min={formData.startTime || new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+                      .replace(/,/, '')
+                      .replace(/(\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) (AM|PM)/,
+                        (match, month, day, year, hour, minute, second, period) => {
+                          const hour24 = period === 'PM' && hour !== '12' ? parseInt(hour) + 12 :
+                            period === 'AM' && hour === '12' ? 0 : parseInt(hour);
+                          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute}`;
+                        })}
                     disabled={isSubmitting}
                   />
                   {errors.endTime && (
@@ -341,9 +367,8 @@ const IllustrationImageAdd = () => {
 
             <button
               type="submit"
-              className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`mt-6 bg-[#393185] text-white py-2 px-4 rounded flex items-center justify-center ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -369,8 +394,8 @@ const IllustrationImageAdd = () => {
               {isSubmitting
                 ? "Submitting..."
                 : id
-                ? "Update Illustration"
-                : "Add Illustration"}
+                  ? "Update Illustration"
+                  : "Add Illustration"}
             </button>
           </form>
         </div>
@@ -380,4 +405,4 @@ const IllustrationImageAdd = () => {
   );
 };
 
-export default IllustrationImageAdd;
+export default IllustrationImageAdd; 
