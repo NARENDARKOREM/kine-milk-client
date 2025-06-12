@@ -201,16 +201,14 @@ const IllustrationImageAdd = () => {
           const response = await api.get(`/illustration/getillustrationbyid/${id}`);
           if (response.data) {
             const formatDateTime = (dateTime) => {
-              if (!dateTime) return "";
-              // Convert YYYY-MM-DD HH:mm:ss to YYYY-MM-DDTHH:mm
-              const date = new Date(dateTime);
-              const year = date.getFullYear();
-              const month = String(date.getMonth() + 1).padStart(2, '0');
-              const day = String(date.getDate()).padStart(2, '0');
-              const hours = String(date.getHours()).padStart(2, '0');
-              const minutes = String(date.getMinutes()).padStart(2, '0');
-              return `${year}-${month}-${day}T${hours}:${minutes}`;
-            };
+  if (!dateTime) return "";
+  // Parse the IST date string (YYYY-MM-DD HH:mm:ss)
+  const [datePart, timePart] = dateTime.split(" ");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+  // Format for datetime-local input (YYYY-MM-DDTHH:mm)
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
 
             const startTime = formatDateTime(response.data.startTime);
             const endTime = formatDateTime(response.data.endTime);
