@@ -8,31 +8,27 @@ import api from "../../utils/api";
 import Select from "react-select";
 import { AiOutlineDown } from "react-icons/ai";
 import { useForm } from "react-hook-form";
-import moment from "moment-timezone"; // Add moment-timezone for consistent handling
 
 const IllustrationImageAdd = () => {
   const {
     register,
     handleSubmit,
     setValue,
-    watch,
     setError,
     clearErrors,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      screenName: "",
-      status: "",
-      startTime: "",
-      endTime: "",
-      img: null,
-    },
-  });
+  } = useForm();
   const navigate = useNavigate();
   const location = useLocation();
   const id = location.state ? location.state.id : null;
+  const [formData, setFormData] = useState({
+    screenName: "",
+    status: "",
+    startTime: "",
+    endTime: "",
+    img: null,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
 
   const screenNameOptions = [
     { value: "login_with_ph_no", label: "Login with Phone Number" },
@@ -98,102 +94,93 @@ const IllustrationImageAdd = () => {
           message: "Image size must be 1MB or less",
         });
         e.target.value = "";
-        setImagePreview(null);
-        setValue("img", null);
+        setFormData({ ...formData, img: null });
         return;
       }
       clearErrors("img");
       const imgURL = URL.createObjectURL(file);
-      setImagePreview(imgURL);
-      setValue("img", file, { shouldValidate: true });
-    } else {
-      setImagePreview(null);
-      setValue("img", null);
-      clearErrors("img");
+      setFormData({ ...formData, img: imgURL, file });
     }
   };
 
-  const formatDateForInput = (date) => {
-    if (!date) return "";
-    // Convert UTC date to IST for display
-    return moment.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DDTHH:mm");
+  const handleSelectChange = (field, selectedOption) => {
+    const newFormData = { ...formData, [field]: selectedOption.value };
+    setFormData(newFormData);
+    setValue(field, selectedOption.value);
   };
 
-  // In onSubmit (IllustrationImageAdd.js)
-const onSubmit = async (data) => {
-  console.log("Form Data:", data);
-  console.log("Image is File:", data.img instanceof File);
-  setIsSubmitting(true);
-  NotificationManager.removeAll();
-  try {
-    if (!data.screenName) {
-      NotificationManager.error("Screen name is required.", "Error");
-      setIsSubmitting(false);
-      return;
-    }
-    if (!data.status) {
-      NotificationManager.error("Status is required.", "Error");
-      setIsSubmitting(false);
-      return;
-    }
+  const handleTimeChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    setValue(field, value);
+  };
 
-    const now = moment().tz("Asia/Kolkata").toDate();
-    if (data.endTime) {
-      const endDate = moment.tz(data.endTime, "Asia/Kolkata").toDate();
-      if (endDate <= now) {
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
+    NotificationManager.removeAll();
+    try {
+      if (!formData.screenName) {
+        NotificationManager.error("Screen name is required.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.status) {
+        NotificationManager.error("Status is required.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!id && !data.img) {
+        NotificationManager.error("Illustration image is required for a new illustration.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const now = new Date().toISOString();
+      if (formData.endTime && formData.endTime <= now) {
         NotificationManager.error("End date/time must be in the future.", "Error");
         setIsSubmitting(false);
         return;
       }
-    }
-    if (data.startTime && data.endTime) {
-      const startDate = moment.tz(data.startTime, "Asia/Kolkata").toDate();
-      const endDate = moment.tz(data.endTime, "Asia/Kolkata").toDate();
-      if (startDate >= endDate) {
+      if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
         NotificationManager.error("End date/time must be after start date/time.", "Error");
         setIsSubmitting(false);
         return;
       }
-    }
 
-    const form = new FormData();
-    form.append("screenName", data.screenName);
-    form.append("status", data.status);
-    const startTimeFormatted = data.startTime
-      ? moment.tz(data.startTime, "Asia/Kolkata").toISOString()
-      : "";
-    const endTimeFormatted = data.endTime
-      ? moment.tz(data.endTime, "Asia/Kolkata").toISOString()
-      : "";
-    console.log("Submitted startTime:", startTimeFormatted);
-    console.log("Submitted endTime:", endTimeFormatted);
-    form.append("startTime", startTimeFormatted);
-    form.append("endTime", endTimeFormatted);
-    if (data.img instanceof File) {
-      form.append("img", data.img);
-    }
-    if (id) {
-      form.append("id", id);
-    }
+      const form = new FormData();
+      form.append("screenName", formData.screenName);
+      form.append("status", formData.status);
+      if (formData.startTime) {
+        form.append("startTime", formData.startTime);
+      }
+      if (formData.endTime) {
+        form.append("endTime", formData.endTime);
+      }
+      if (data.img && data.img[0]) {
+        form.append("img", data.img[0]);
+      }
+      if (id) {
+        form.append("id", id);
+      }
 
-    const response = await api.post("/illustration/upsert-illustration", form, {
-      headers: { "Content-Type": "multipart/form-data" },
-      withCredentials: true,
-    });
-    NotificationManager.success(
-      id ? "Illustration updated successfully." : "Illustration added successfully.",
-      "Success"
-    );
-    setTimeout(() => navigate("/admin/list-illustration"), 2000);
-  } catch (error) {
-    const errorMsg =
-      error.response?.data?.ResponseMsg ||
-      (id ? "Failed to update Illustration" : "Failed to add Illustration");
-    NotificationManager.error(errorMsg, "Error");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      const response = await api.post("/illustration/upsert-illustration", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+
+      NotificationManager.success(
+        id ? "Illustration updated successfully." : "Illustration added successfully.",
+        "Success"
+      );
+      setTimeout(() => navigate("/admin/list-illustration"), 2000);
+    } catch (error) {
+      const errorMsg =
+        error.response?.data?.ResponseMsg ||
+        (id ? "Failed to update Illustration" : "Failed to add Illustration");
+      NotificationManager.error(errorMsg, "Error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -201,13 +188,20 @@ const onSubmit = async (data) => {
         try {
           const response = await api.get(`/illustration/getillustrationbyid/${id}`);
           if (response.data) {
+            setFormData({
+              screenName: response.data.screenName,
+              status: response.data.status.toString(),
+              startTime: response.data.startTime || "",
+              endTime: response.data.endTime || "",
+              img: response.data.img,
+            });
             setValue("screenName", response.data.screenName);
             setValue("status", response.data.status.toString());
-            setValue("startTime", formatDateForInput(response.data.startTime));
-            setValue("endTime", formatDateForInput(response.data.endTime));
-            setImagePreview(response.data.img);
+            setValue("startTime", response.data.startTime || "");
+            setValue("endTime", response.data.endTime || "");
           }
         } catch (error) {
+          NotificationManager.removeAll();
           NotificationManager.error("Failed to load illustration details.", "Error");
         }
       };
@@ -229,14 +223,18 @@ const onSubmit = async (data) => {
                 </label>
                 <input
                   type="file"
+                  name="img"
+                  {...register("img", {
+                    required: !id ? "Illustration image is required" : false,
+                  })}
                   onChange={handleImageUpload}
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
                   className="w-full border border-gray-300 rounded p-2"
                   disabled={isSubmitting}
                 />
-                {imagePreview && (
+                {formData.img && (
                   <img
-                    src={imagePreview}
+                    src={formData.img}
                     alt="Preview"
                     className="w-16 h-16 mt-2 rounded"
                   />
@@ -253,9 +251,9 @@ const onSubmit = async (data) => {
                   </label>
                   <Select
                     value={screenNameOptions.find(
-                      (option) => option.value === watch("screenName")
+                      (option) => option.value === formData.screenName
                     )}
-                    onChange={(option) => setValue("screenName", option.value)}
+                    onChange={(option) => handleSelectChange("screenName", option)}
                     options={screenNameOptions}
                     styles={customStyles}
                     placeholder="Select Screen Name"
@@ -269,6 +267,7 @@ const onSubmit = async (data) => {
                     className="w-full"
                     menuPortalTarget={document.body}
                     menuPosition="absolute"
+                    menuShouldScrollIntoView={false}
                     isDisabled={isSubmitting}
                   />
                 </div>
@@ -279,9 +278,9 @@ const onSubmit = async (data) => {
                   </label>
                   <Select
                     value={statusOptions.find(
-                      (option) => option.value === watch("status")
+                      (option) => option.value === formData.status
                     )}
-                    onChange={(option) => setValue("status", option.value)}
+                    onChange={(option) => handleSelectChange("status", option)}
                     options={statusOptions}
                     styles={customStyles}
                     placeholder="Select Status"
@@ -295,6 +294,7 @@ const onSubmit = async (data) => {
                     className="w-full"
                     menuPortalTarget={document.body}
                     menuPosition="absolute"
+                    menuShouldScrollIntoView={false}
                     isDisabled={isSubmitting}
                   />
                 </div>
@@ -308,8 +308,10 @@ const onSubmit = async (data) => {
                   <input
                     type="datetime-local"
                     {...register("startTime")}
+                    value={formData.startTime}
+                    onChange={(e) => handleTimeChange("startTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={moment().tz("Asia/Kolkata").format("YYYY-MM-DDTHH:mm")}
+                    min={new Date().toISOString().slice(0, 16)}
                     disabled={isSubmitting}
                   />
                   {errors.startTime && (
@@ -324,12 +326,10 @@ const onSubmit = async (data) => {
                   <input
                     type="datetime-local"
                     {...register("endTime")}
+                    value={formData.endTime}
+                    onChange={(e) => handleTimeChange("endTime", e.target.value)}
                     className="w-full border border-gray-300 rounded p-2"
-                    min={
-                      watch("startTime")
-                        ? moment.tz(watch("startTime"), "Asia/Kolkata").format("YYYY-MM-DDTHH:mm")
-                        : moment().tz("Asia/Kolkata").format("YYYY-MM-DDTHH:mm")
-                    }
+                    min={formData.startTime || new Date().toISOString().slice(0, 16)}
                     disabled={isSubmitting}
                   />
                   {errors.endTime && (

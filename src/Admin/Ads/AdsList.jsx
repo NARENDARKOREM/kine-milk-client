@@ -89,11 +89,11 @@ const AdsList = () => {
     const filteredData = ads.filter((ad) => {
       const screenNameMatch = ad.screenName?.toLowerCase().includes(querySearch);
       const planTypeMatch = ad.planType?.toLowerCase().includes(querySearch);
-      const startDateMatch = formatDateTime(ad.startDateTime)
-        .toLowerCase()
+      const startDateMatch = ad.startDateTime
+        ?.toLowerCase()
         .includes(querySearch);
-      const endDateMatch = formatDateTime(ad.endDateTime)
-        .toLowerCase()
+      const endDateMatch = ad.endDateTime
+        ?.toLowerCase()
         .includes(querySearch);
       const statusMatch =
         (ad.status === 1 ? "published" : "unpublished")
@@ -130,9 +130,8 @@ const AdsList = () => {
   };
 
   const handleToggleChange = async (id, currentStatus, field, startDateTime) => {
-    const now = new Date();
-    const startDate = startDateTime ? new Date(startDateTime) : null;
-    if (startDate && startDate > now) {
+    const now = new Date().toISOString();
+    if (startDateTime && startDateTime > now) {
       NotificationManager.error(
         "Cannot toggle status for an ad with a future start date. It will be published automatically when the start time is reached.",
         "Error"
@@ -141,13 +140,8 @@ const AdsList = () => {
     }
     try {
       await StatusEntity("Ads", id, currentStatus, setFilteredAds, filteredAds, field);
-      // NotificationManager.success("Ad status updated successfully", "Success");
     } catch (error) {
       console.error("Error toggling ad status:", error);
-      // NotificationManager.error(
-      //   error.response?.data?.ResponseMsg || "Error updating ad status",
-      //   "Error"
-      // );
     }
   };
 
@@ -181,9 +175,8 @@ const AdsList = () => {
 
   const renderStatus = (status, id, startDateTime) => {
     const statusLabel = status === 1 ? "Published" : "Unpublished";
-    const now = new Date();
-    const startDate = startDateTime ? new Date(startDateTime) : null;
-    const isFutureStart = startDate && startDate > now;
+    const now = new Date().toISOString();
+    const isFutureStart = startDateTime && startDateTime > now;
 
     return (
       <div className="flex items-center">
@@ -200,19 +193,7 @@ const AdsList = () => {
   };
 
   const formatDateTime = (dateTime) => {
-    if (!dateTime) return "-";
-    const utcDate = new Date(dateTime);
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istDate = new Date(utcDate.getTime() + istOffset);
-    return istDate.toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return dateTime || "-";
   };
 
   const columns = ["S.No.", "Ad Image", "Screen Name", "Plan Type", "Start Date", "End Date", "Status"];
