@@ -213,10 +213,10 @@ const BannerAdd = () => {
 
       console.log(formData.startTime, "formData.startTime");
       console.log(formData.endTime, "formData.endTime");
-      // const response = await api.post("/banner/upsert-banner", form, {
-      //   headers: { "Content-Type": "multipart/form-data" },
-      //   withCredentials: true,
-      // });
+      const response = await api.post("/banner/upsert-banner", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
 
       NotificationManager.success(
         id ? "Banner updated successfully." : "Banner added successfully.",
