@@ -153,21 +153,25 @@ const AdsAdd = () => {
     setIsSubmitting(true);
     try {
       if (!formData.screenName) {
+        NotificationManager.removeAll();
         NotificationManager.error("Screen name is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!formData.planType) {
+        NotificationManager.removeAll();
         NotificationManager.error("Plan type is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!formData.status) {
+        NotificationManager.removeAll();
         NotificationManager.error("Status is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!id && !formData.imageFile) {
+        NotificationManager.removeAll();
         NotificationManager.error("Ad image is required for new ads.", "Error");
         setIsSubmitting(false);
         return;
@@ -180,11 +184,13 @@ const AdsAdd = () => {
         return;
       }
       if (formData.endDateTime && formData.endDateTime < now) {
+        NotificationManager.removeAll();
         NotificationManager.error("End date/time cannot be in the past.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (formData.startDateTime && formData.endDateTime && formData.startDateTime >= formData.endDateTime) {
+        NotificationManager.removeAll();
         NotificationManager.error("End date/time must be after start date/time.", "Error");
         setIsSubmitting(false);
         return;
@@ -206,6 +212,7 @@ const AdsAdd = () => {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
+      NotificationManager.removeAll();
       NotificationManager.success(
         id ? "Ad updated successfully." : "Ad added successfully.",
         "Success"
@@ -216,6 +223,7 @@ const AdsAdd = () => {
       const errorMsg =
         error.response?.data?.ResponseMsg ||
         (id ? "Failed to update ad" : "Failed to add ad");
+        NotificationManager.removeAll();
       NotificationManager.error(errorMsg, "Error");
     } finally {
       setIsSubmitting(false);
@@ -246,6 +254,7 @@ const AdsAdd = () => {
             setValue("couponPercentage", response.data.couponPercentage || "");
           }
         } catch (error) {
+          NotificationManager.removeAll();
           NotificationManager.error("Failed to load ad details.", "Error");
         }
       };
