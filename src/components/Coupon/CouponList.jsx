@@ -244,6 +244,9 @@ const CouponList = () => {
     "status",
   ];
 
+  const renderTime = (time) => {
+    return time || "N/A";
+  };
   const tableData = filteredCoupon
     .slice((page - 1) * itemsPerPage, page * itemsPerPage)
     .map((coupon, index) => ({
@@ -253,8 +256,8 @@ const CouponList = () => {
       coupon_title: coupon.coupon_title || "N/A",
       subtitle: coupon.subtitle || "N/A",
       coupon_code: coupon.coupon_code || "N/A",
-      display_start_date: coupon.display_start_date || "N/A",
-      display_end_date: coupon.display_end_date || "N/A",
+      display_start_date: renderTime(coupon.display_start_date) || "N/A",
+      display_end_date: renderTime(coupon.display_end_date) || "N/A",
       min_amt: coupon.min_amt || "N/A",
       coupon_val: coupon.coupon_val || "N/A",
       status: renderStatus(coupon.status, coupon.id, coupon.raw_start_date, coupon.raw_end_date),

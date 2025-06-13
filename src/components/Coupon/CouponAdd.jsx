@@ -86,19 +86,18 @@ const CouponAdd = () => {
 };
 
   const formatDateForInput = (date) => {
-    if (!date) return "";
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return "";
+  if (!date) return "";
+// + const d = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  if (isNaN(d.getTime())) return "";
 
-    // Dates are in IST, format directly
-    const pad = (n) => n.toString().padStart(2, "0");
-    const year = d.getFullYear();
-    const month = pad(d.getMonth() + 1);
-    const day = pad(d.getDate());
-    const hours = pad(d.getHours());
-    const minutes = pad(d.getMinutes());
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+  const pad = (n) => n.toString().padStart(2, "0");
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
   useEffect(() => {
     if (id) {
@@ -205,108 +204,216 @@ const CouponAdd = () => {
     setValue("coupon_code", randomCode);
   };
 
+  // const onSubmit = async (data) => {
+  //   setIsSubmitting(true);
+  //   try {
+  //     if (!id && !formData.coupon_img) {
+  //       setError("coupon_img", {
+  //         type: "manual",
+  //         message: "Coupon image is required",
+  //       });
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+
+  //     const now = new Date();
+  //     if (data.end_date) {
+  //       const endDate = new Date(data.end_date);
+  //       if (endDate <= now) {
+  //         NotificationManager.error("End date/time must be in the future.", "Error");
+  //         setIsSubmitting(false);
+  //         return;
+  //       }
+  //     }
+  //     if (data.start_date && data.end_date) {
+  //       const startDate = new Date(data.start_date);
+  //       const endDate = new Date(data.end_date);
+  //       if (startDate >= endDate) {
+  //         NotificationManager.error("End date/time must be after start date/time.", "Error");
+  //         setIsSubmitting(false);
+  //         return;
+  //       }
+  //     }
+
+  //     const form = new FormData();
+  //     form.append("coupon_title", data.coupon_title);
+  //     form.append("status", formData.status);
+  //     form.append("start_date", data.start_date || "");
+  //     form.append("end_date", data.end_date || "");
+  //     form.append("description", data.description);
+  //     form.append("subtitle", data.subtitle);
+  //     form.append("min_amt", data.min_amt);
+  //     form.append("coupon_val", data.coupon_val);
+  //     form.append("coupon_code", formData.coupon_code);
+  //     if (formData.coupon_img && formData.coupon_img instanceof File) {
+  //       form.append("coupon_img", formData.coupon_img);
+  //     }
+  //     if (id) {
+  //       form.append("id", id);
+  //     }
+
+  //     await api.post("/coupon/upsert", form, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
+  //     NotificationManager.removeAll();
+  //     NotificationManager.success(
+  //       id ? "Coupon updated successfully!" : "Coupon added successfully!",
+  //       "Success"
+  //     );
+
+  //     setTimeout(() => {
+  //       navigate("/admin/coupon-list");
+  //     }, 2000);
+  //   } catch (error) {
+  //     NotificationManager.removeAll();
+  //     const errorMsg = error.response?.data?.ResponseMsg;
+  //     if (
+  //       error.response?.status === 400 &&
+  //       errorMsg === "Image size must be 1MB or less"
+  //     ) {
+  //       setError("coupon_img", {
+  //         type: "manual",
+  //         message: "Image size must be 1MB or less",
+  //       });
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         coupon_img: null,
+  //         coupon_img_preview: id ? formData.coupon_img_preview : "",
+  //       }));
+  //     } else if (
+  //       error.response?.status === 400 &&
+  //       errorMsg.includes("End date/time must be after start date/time")
+  //     ) {
+  //       setError("end_date", {
+  //         type: "manual",
+  //         message: "End date/time must be after start date/time",
+  //       });
+  //     } else if (
+  //       error.response?.status === 400 &&
+  //       errorMsg === "Image is required for a new coupon."
+  //     ) {
+  //       setError("coupon_img", {
+  //         type: "manual",
+  //         message: "Coupon image is required",
+  //       });
+  //     } else {
+  //       NotificationManager.error(
+  //         id ? "Failed to update Coupon." : "Failed to add Coupon.",
+  //         "Error"
+  //       );
+  //     }
+  //   }
+  //   setIsSubmitting(false);
+  // };
+
+
   const onSubmit = async (data) => {
-    setIsSubmitting(true);
-    try {
-      if (!id && !formData.coupon_img) {
-        setError("coupon_img", {
-          type: "manual",
-          message: "Coupon image is required",
-        });
+  setIsSubmitting(true);
+  try {
+    if (!id && !formData.coupon_img) {
+      setError("coupon_img", {
+        type: "manual",
+        message: "Coupon image is required",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+  //  const now = new Date();
+// +   // Ensure current time is in IST
+// +   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    if (data.end_date) {
+      const endDate = new Date(data.end_date);
+      if (endDate <= now) {
+        NotificationManager.error("End date/time must be in the future.", "Error");
         setIsSubmitting(false);
         return;
       }
-
-      const now = new Date();
-      if (data.end_date) {
-        const endDate = new Date(data.end_date);
-        if (endDate <= now) {
-          NotificationManager.error("End date/time must be in the future.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-      if (data.start_date && data.end_date) {
-        const startDate = new Date(data.start_date);
-        const endDate = new Date(data.end_date);
-        if (startDate >= endDate) {
-          NotificationManager.error("End date/time must be after start date/time.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      const form = new FormData();
-      form.append("coupon_title", data.coupon_title);
-      form.append("status", formData.status);
-      form.append("start_date", data.start_date || "");
-      form.append("end_date", data.end_date || "");
-      form.append("description", data.description);
-      form.append("subtitle", data.subtitle);
-      form.append("min_amt", data.min_amt);
-      form.append("coupon_val", data.coupon_val);
-      form.append("coupon_code", formData.coupon_code);
-      if (formData.coupon_img && formData.coupon_img instanceof File) {
-        form.append("coupon_img", formData.coupon_img);
-      }
-      if (id) {
-        form.append("id", id);
-      }
-
-      await api.post("/coupon/upsert", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      NotificationManager.removeAll();
-      NotificationManager.success(
-        id ? "Coupon updated successfully!" : "Coupon added successfully!",
-        "Success"
-      );
-
-      setTimeout(() => {
-        navigate("/admin/coupon-list");
-      }, 2000);
-    } catch (error) {
-      NotificationManager.removeAll();
-      const errorMsg = error.response?.data?.ResponseMsg;
-      if (
-        error.response?.status === 400 &&
-        errorMsg === "Image size must be 1MB or less"
-      ) {
-        setError("coupon_img", {
-          type: "manual",
-          message: "Image size must be 1MB or less",
-        });
-        setFormData((prevData) => ({
-          ...prevData,
-          coupon_img: null,
-          coupon_img_preview: id ? formData.coupon_img_preview : "",
-        }));
-      } else if (
-        error.response?.status === 400 &&
-        errorMsg.includes("End date/time must be after start date/time")
-      ) {
-        setError("end_date", {
-          type: "manual",
-          message: "End date/time must be after start date/time",
-        });
-      } else if (
-        error.response?.status === 400 &&
-        errorMsg === "Image is required for a new coupon."
-      ) {
-        setError("coupon_img", {
-          type: "manual",
-          message: "Coupon image is required",
-        });
-      } else {
-        NotificationManager.error(
-          id ? "Failed to update Coupon." : "Failed to add Coupon.",
-          "Error"
-        );
+    }
+    if (data.start_date && data.end_date) {
+      const startDate = new Date(data.start_date);
+      const endDate = new Date(data.end_date);
+      if (startDate >= endDate) {
+        NotificationManager.error("End date/time must be after start date/time.", "Error");
+        setIsSubmitting(false);
+        return;
       }
     }
-    setIsSubmitting(false);
-  };
 
+    const form = new FormData();
+    form.append("coupon_title", data.coupon_title);
+    form.append("status", formData.status);
+// -   form.append("start_date", data.start_date || "");
+// -   form.append("end_date", data.end_date || "");
+// +   // Send dates as raw strings in the format YYYY-MM-DDThh:mm (local time, IST)
+   form.append("start_date", formData.start_date || "");
+   form.append("end_date", formData.end_date || "");
+    form.append("description", data.description);
+    form.append("subtitle", data.subtitle);
+    form.append("min_amt", data.min_amt);
+    form.append("coupon_val", data.coupon_val);
+    form.append("coupon_code", formData.coupon_code);
+    if (formData.coupon_img && formData.coupon_img instanceof File) {
+      form.append("coupon_img", formData.coupon_img);
+    }
+    if (id) {
+      form.append("id", id);
+    }
+    console.log(formData.start_date," form data");
+    console.log(formData.end_date," form data");
+    await api.post("/coupon/upsert", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    NotificationManager.removeAll();
+    NotificationManager.success(
+      id ? "Coupon updated successfully!" : "Coupon added successfully!",
+      "Success"
+    );
+
+    setTimeout(() => {
+      navigate("/admin/coupon-list");
+    }, 2000);
+  } catch (error) {
+    NotificationManager.removeAll();
+    const errorMsg = error.response?.data?.ResponseMsg;
+    if (
+      error.response?.status === 400 &&
+      errorMsg === "Image size must be 1MB or less"
+    ) {
+      setError("coupon_img", {
+        type: "manual",
+        message: "Image size must be 1MB or less",
+      });
+      setFormData((prevData) => ({
+        ...prevData,
+        coupon_img: null,
+        coupon_img_preview: id ? formData.coupon_img_preview : "",
+      }));
+    } else if (
+      error.response?.status === 400 &&
+      errorMsg.includes("End date/time must be after start date/time")
+    ) {
+      setError("end_date", {
+        type: "manual",
+        message: "End date/time must be after start date/time",
+      });
+    } else if (
+      error.response?.status === 400 &&
+      errorMsg === "Image is required for a new coupon."
+    ) {
+      setError("coupon_img", {
+        type: "manual",
+        message: "Coupon image is required",
+      });
+    } else {
+      NotificationManager.error(
+        id ? "Failed to update Coupon." : "Failed to add Coupon.",
+        "Error"
+      );
+    }
+  }
+  setIsSubmitting(false);
+};
   return (
     <div className="bg-[#f7fbff] h-full">
       <div className="flex">

@@ -127,112 +127,219 @@ const BannerAdd = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
+  // const onSubmit = async (data) => {
+  //   setIsSubmitting(true);
+  //   NotificationManager.removeAll();
+  //   try {
+  //     if (!formData.planType) {
+  //       NotificationManager.error("Plan type is required.", "Error");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+  //     if (!formData.status) {
+  //       NotificationManager.error("Status is required.", "Error");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+  //     if (!id && !data.img) {
+  //       NotificationManager.error("Banner image is required for a new banner.", "Error");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+
+  //     // Get current time in IST
+  //     const nowInIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  //     console.log("Current Time in IST:", nowInIST.toISOString());
+
+  //     if (formData.startTime) {
+  //       const startDateInIST = new Date(formData.startTime);
+  //       console.log("Start Date in IST:", startDateInIST.toISOString());
+  //       // Compare dates by setting seconds and milliseconds to 0 to avoid precision issues
+  //       const nowInISTForComparison = new Date(nowInIST);
+  //       nowInISTForComparison.setSeconds(0, 0);
+  //       const startDateInISTForComparison = new Date(startDateInIST);
+  //       startDateInISTForComparison.setSeconds(0, 0);
+  //       // Only enforce future startTime for new banners, not when editing
+  //       if (!id && startDateInISTForComparison <= nowInISTForComparison) {
+  //         NotificationManager.error("Start date/time must be in the future.", "Error");
+  //         setIsSubmitting(false);
+  //         return;
+  //       }
+  //     }
+
+  //     if (formData.endTime) {
+  //       const endDateInIST = new Date(formData.endTime);
+  //       console.log("End Date in IST:", endDateInIST.toISOString());
+  //       const nowInISTForComparison = new Date(nowInIST);
+  //       nowInISTForComparison.setSeconds(0, 0);
+  //       const endDateInISTForComparison = new Date(endDateInIST);
+  //       endDateInISTForComparison.setSeconds(0, 0);
+  //       if (endDateInISTForComparison <= nowInISTForComparison) {
+  //         NotificationManager.error("End date/time must be in the future.", "Error");
+  //         setIsSubmitting(false);
+  //         return;
+  //       }
+  //     }
+
+  //     if (formData.startTime && formData.endTime) {
+  //       const startDateInIST = new Date(formData.startTime);
+  //       const endDateInIST = new Date(formData.endTime);
+  //       const startDateInISTForComparison = new Date(startDateInIST);
+  //       startDateInISTForComparison.setSeconds(0, 0);
+  //       const endDateInISTForComparison = new Date(endDateInIST);
+  //       endDateInISTForComparison.setSeconds(0, 0);
+  //       if (startDateInISTForComparison >= endDateInISTForComparison) {
+  //         NotificationManager.error("End date/time must be after start date/time.", "Error");
+  //         setIsSubmitting(false);
+  //         return;
+  //       }
+  //     }
+
+  //     const form = new FormData();
+  //     form.append("planType", formData.planType);
+  //     form.append("status", formData.status);
+  //     if (formData.startTime) {
+  //       form.append("startTime", new Date(formData.startTime).toISOString());
+  //     }
+  //     if (formData.endTime) {
+  //       form.append("endTime", new Date(formData.endTime).toISOString());
+  //     }
+  //     if (data.img && data.img[0]) {
+  //       form.append("img", data.img[0]);
+  //     }
+  //     if (id) {
+  //       form.append("id", id);
+  //     }
+
+  //     console.log(formData.startTime, "formData.startTime");
+  //     console.log(formData.endTime, "formData.endTime");
+  //     const response = await api.post("/banner/upsert-banner", form, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //       withCredentials: true,
+  //     });
+
+  //     NotificationManager.success(
+  //       id ? "Banner updated successfully." : "Banner added successfully.",
+  //       "Success"
+  //     );
+  //     // setTimeout(() => navigate("/admin/banner-list"), 2000);
+  //   } catch (error) {
+  //     const errorMsg =
+  //       error.response?.data?.ResponseMsg ||
+  //       (id ? "Failed to update Banner" : "Failed to add Banner");
+  //     NotificationManager.error(errorMsg, "Error");
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const onSubmit = async (data) => {
-    setIsSubmitting(true);
-    NotificationManager.removeAll();
-    try {
-      if (!formData.planType) {
-        NotificationManager.error("Plan type is required.", "Error");
-        setIsSubmitting(false);
-        return;
-      }
-      if (!formData.status) {
-        NotificationManager.error("Status is required.", "Error");
-        setIsSubmitting(false);
-        return;
-      }
-      if (!id && !data.img) {
-        NotificationManager.error("Banner image is required for a new banner.", "Error");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Get current time in IST
-      const nowInIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
-      console.log("Current Time in IST:", nowInIST.toISOString());
-
-      if (formData.startTime) {
-        const startDateInIST = new Date(formData.startTime);
-        console.log("Start Date in IST:", startDateInIST.toISOString());
-        // Compare dates by setting seconds and milliseconds to 0 to avoid precision issues
-        const nowInISTForComparison = new Date(nowInIST);
-        nowInISTForComparison.setSeconds(0, 0);
-        const startDateInISTForComparison = new Date(startDateInIST);
-        startDateInISTForComparison.setSeconds(0, 0);
-        // Only enforce future startTime for new banners, not when editing
-        if (!id && startDateInISTForComparison <= nowInISTForComparison) {
-          NotificationManager.error("Start date/time must be in the future.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      if (formData.endTime) {
-        const endDateInIST = new Date(formData.endTime);
-        console.log("End Date in IST:", endDateInIST.toISOString());
-        const nowInISTForComparison = new Date(nowInIST);
-        nowInISTForComparison.setSeconds(0, 0);
-        const endDateInISTForComparison = new Date(endDateInIST);
-        endDateInISTForComparison.setSeconds(0, 0);
-        if (endDateInISTForComparison <= nowInISTForComparison) {
-          NotificationManager.error("End date/time must be in the future.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      if (formData.startTime && formData.endTime) {
-        const startDateInIST = new Date(formData.startTime);
-        const endDateInIST = new Date(formData.endTime);
-        const startDateInISTForComparison = new Date(startDateInIST);
-        startDateInISTForComparison.setSeconds(0, 0);
-        const endDateInISTForComparison = new Date(endDateInIST);
-        endDateInISTForComparison.setSeconds(0, 0);
-        if (startDateInISTForComparison >= endDateInISTForComparison) {
-          NotificationManager.error("End date/time must be after start date/time.", "Error");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      const form = new FormData();
-      form.append("planType", formData.planType);
-      form.append("status", formData.status);
-      if (formData.startTime) {
-        form.append("startTime", new Date(formData.startTime).toISOString());
-      }
-      if (formData.endTime) {
-        form.append("endTime", new Date(formData.endTime).toISOString());
-      }
-      if (data.img && data.img[0]) {
-        form.append("img", data.img[0]);
-      }
-      if (id) {
-        form.append("id", id);
-      }
-
-      console.log(formData.startTime, "formData.startTime");
-      console.log(formData.endTime, "formData.endTime");
-      const response = await api.post("/banner/upsert-banner", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
-
-      NotificationManager.success(
-        id ? "Banner updated successfully." : "Banner added successfully.",
-        "Success"
-      );
-      // setTimeout(() => navigate("/admin/banner-list"), 2000);
-    } catch (error) {
-      const errorMsg =
-        error.response?.data?.ResponseMsg ||
-        (id ? "Failed to update Banner" : "Failed to add Banner");
-      NotificationManager.error(errorMsg, "Error");
-    } finally {
+  setIsSubmitting(true);
+  NotificationManager.removeAll();
+  try {
+    if (!formData.planType) {
+      NotificationManager.error("Plan type is required.", "Error");
       setIsSubmitting(false);
+      return;
     }
-  };
+    if (!formData.status) {
+      NotificationManager.error("Status is required.", "Error");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!id && !data.img) {
+      NotificationManager.error("Banner image is required for a new banner.", "Error");
+      setIsSubmitting(false);
+      return;
+    }
 
+    const nowInIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    console.log("Current Time in IST:", nowInIST.toISOString());
+
+    if (formData.startTime) {
+      const startDateInIST = new Date(formData.startTime);
+      console.log("Start Date in IST:", startDateInIST.toISOString());
+      const nowInISTForComparison = new Date(nowInIST);
+      nowInISTForComparison.setSeconds(0, 0);
+      const startDateInISTForComparison = new Date(startDateInIST);
+      startDateInISTForComparison.setSeconds(0, 0);
+      if (!id && startDateInISTForComparison <= nowInISTForComparison) {
+        NotificationManager.error("Start date/time must be in the future.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    if (formData.endTime) {
+      const endDateInIST = new Date(formData.endTime);
+      console.log("End Date in IST:", endDateInIST.toISOString());
+      const nowInISTForComparison = new Date(nowInIST);
+      nowInISTForComparison.setSeconds(0, 0);
+      const endDateInISTForComparison = new Date(endDateInIST);
+      endDateInISTForComparison.setSeconds(0, 0);
+      if (endDateInISTForComparison <= nowInISTForComparison) {
+        NotificationManager.error("End date/time must be in the future.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    if (formData.startTime && formData.endTime) {
+      const startDateInIST = new Date(formData.startTime);
+      const endDateInIST = new Date(formData.endTime);
+      const startDateInISTForComparison = new Date(startDateInIST);
+      startDateInISTForComparison.setSeconds(0, 0);
+      const endDateInISTForComparison = new Date(endDateInIST);
+      endDateInISTForComparison.setSeconds(0, 0);
+      if (startDateInISTForComparison >= endDateInISTForComparison) {
+        NotificationManager.error("End date/time must be after start date/time.", "Error");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    const form = new FormData();
+    form.append("planType", formData.planType);
+    form.append("status", formData.status);
+  //  if (formData.startTime) {
+  //    form.append("startTime", new Date(formData.startTime).toISOString());
+  //  }
+  //  if (formData.endTime) {
+  //    form.append("endTime", new Date(formData.endTime).toISOString());
+  //  }
+   if (formData.startTime) {
+     form.append("startTime", formData.startTime);
+   }
+   if (formData.endTime) {
+     form.append("endTime", formData.endTime);
+   }
+    if (data.img && data.img[0]) {
+      form.append("img", data.img[0]);
+    }
+    if (id) {
+      form.append("id", id);
+    }
+
+    console.log(formData.startTime, "formData.startTime");
+    console.log(formData.endTime, "formData.endTime");
+    const response = await api.post("/banner/upsert-banner", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+    });
+
+    NotificationManager.success(
+      id ? "Banner updated successfully." : "Banner added successfully.",
+      "Success"
+    );
+  } catch (error) {
+    const errorMsg =
+      error.response?.data?.ResponseMsg ||
+      (id ? "Failed to update Banner" : "Failed to add Banner");
+    NotificationManager.error(errorMsg, "Error");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   useEffect(() => {
     if (id) {
       const fetchData = async () => {

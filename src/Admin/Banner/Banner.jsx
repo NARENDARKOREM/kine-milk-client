@@ -176,9 +176,12 @@ const Banner = () => {
     );
   };
 
+  // const renderTime = (time) => {
+  //   if (!time) return "N/A";
+  //   return new Date(time).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  // };
   const renderTime = (time) => {
-    if (!time) return "N/A";
-    return new Date(time).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+    return time || "N/A";
   };
 
   const columns = ["S.No.", "Banner Image", "Plan Type", "Start Time", "End Time", "Status"];
