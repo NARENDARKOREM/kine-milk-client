@@ -170,16 +170,16 @@ const IllustrationImageAdd = () => {
       console.log( "Form Data:", form);
       console.log(formData.startTime,"formData.startTime")
       console.log(formData.endTime,"formData.endTime")
-      // const response = await api.post("/illustration/upsert-illustration", form, {
-      //   headers: { "Content-Type": "multipart/form-data" },
-      //   withCredentials: true,
-      // });
+      const response = await api.post("/illustration/upsert-illustration", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
       NotificationManager.removeAll();
       NotificationManager.success(
         id ? "Illustration updated successfully." : "Illustration added successfully.",
         "Success"
       );
-      // setTimeout(() => navigate("/admin/list-illustration"), 2000);
+      setTimeout(() => navigate("/admin/list-illustration"), 2000);
     } catch (error) {
       const errorMsg =
         error.response?.data?.ResponseMsg ||
