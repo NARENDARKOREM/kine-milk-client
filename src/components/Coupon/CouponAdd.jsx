@@ -87,7 +87,7 @@ const CouponAdd = () => {
 
   const formatDateForInput = (date) => {
   if (!date) return "";
-// + const d = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  const d = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   if (isNaN(d.getTime())) return "";
 
   const pad = (n) => n.toString().padStart(2, "0");
@@ -319,7 +319,7 @@ const CouponAdd = () => {
       return;
     }
 
-  //  const now = new Date();
+   const now = new Date().toISOString();
 // +   // Ensure current time is in IST
 // +   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     if (data.end_date) {
