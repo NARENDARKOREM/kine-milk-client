@@ -211,16 +211,18 @@ const BannerAdd = () => {
         form.append("id", id);
       }
 
-      const response = await api.post("/banner/upsert-banner", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
+      console.log(formData.startTime, "formData.startTime");
+      console.log(formData.endTime, "formData.endTime");
+      // const response = await api.post("/banner/upsert-banner", form, {
+      //   headers: { "Content-Type": "multipart/form-data" },
+      //   withCredentials: true,
+      // });
 
       NotificationManager.success(
         id ? "Banner updated successfully." : "Banner added successfully.",
         "Success"
       );
-      setTimeout(() => navigate("/admin/banner-list"), 2000);
+      // setTimeout(() => navigate("/admin/banner-list"), 2000);
     } catch (error) {
       const errorMsg =
         error.response?.data?.ResponseMsg ||
