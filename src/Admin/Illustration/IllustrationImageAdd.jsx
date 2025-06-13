@@ -119,16 +119,19 @@ const IllustrationImageAdd = () => {
     NotificationManager.removeAll();
     try {
       if (!formData.screenName) {
+        NotificationManager.removeAll();
         NotificationManager.error("Screen name is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!formData.status) {
+        NotificationManager.removeAll();
         NotificationManager.error("Status is required.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (!id && !data.img) {
+        NotificationManager.removeAll();
         NotificationManager.error("Illustration image is required for a new illustration.", "Error");
         setIsSubmitting(false);
         return;
@@ -136,11 +139,13 @@ const IllustrationImageAdd = () => {
 
       const now = new Date().toISOString();
       if (formData.endTime && formData.endTime <= now) {
+        NotificationManager.removeAll();
         NotificationManager.error("End date/time must be in the future.", "Error");
         setIsSubmitting(false);
         return;
       }
       if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
+        NotificationManager.removeAll();
         NotificationManager.error("End date/time must be after start date/time.", "Error");
         setIsSubmitting(false);
         return;
@@ -166,7 +171,7 @@ const IllustrationImageAdd = () => {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
-
+      NotificationManager.removeAll();
       NotificationManager.success(
         id ? "Illustration updated successfully." : "Illustration added successfully.",
         "Success"

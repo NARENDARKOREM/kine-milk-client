@@ -43,6 +43,7 @@ const AdsList = () => {
       setTotalPages(Math.ceil(response.data.length / itemsPerPage));
     } catch (error) {
       console.error("Error fetching ads:", error);
+      NotificationManager.removeAll();
       NotificationManager.error("Error fetching ads", "Error");
     } finally {
       setIsLoading(false);
@@ -121,7 +122,7 @@ const AdsList = () => {
       setAds(updatedAds);
       setFilteredAds(updatedAds);
       setTotalPages(Math.ceil(updatedAds.length / itemsPerPage));
-      NotificationManager.success("Ad deleted successfully", "Success");
+      // NotificationManager.success("Ad deleted successfully", "Success");
     }
   };
 
@@ -132,6 +133,7 @@ const AdsList = () => {
   const handleToggleChange = async (id, currentStatus, field, startDateTime) => {
     const now = new Date().toISOString();
     if (startDateTime && startDateTime > now) {
+      NotificationManager.removeAll();
       NotificationManager.error(
         "Cannot toggle status for an ad with a future start date. It will be published automatically when the start time is reached.",
         "Error"

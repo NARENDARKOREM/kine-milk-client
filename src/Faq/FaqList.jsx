@@ -85,8 +85,8 @@ const FaqList = () => {
       setTotalPages(Math.ceil(updatedFaq.length / itemsPerPage));
       // NotificationManager.success("FAQ deleted successfully", "Success", 3000);
     } else {
-      NotificationManager.removeAll();
-      NotificationManager.error("Failed to delete FAQ", "Error", 3000);
+      // NotificationManager.removeAll();
+      // NotificationManager.error("Failed to delete FAQ", "Error", 3000);
     }
   };
 
