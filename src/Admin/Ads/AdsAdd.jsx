@@ -207,7 +207,9 @@ const AdsAdd = () => {
         form.append("img", formData.imageFile);
       }
       if (id) form.append("id", id);
-
+console.log(form,"formmmmmmmmmmmmmmmm")
+console.log(formData.startDateTime,"formData.startDateTime")
+console.log(formData.endDateTime,"formData.endDateTime")
       const response = await api.post("/ads/upsert-ads", form, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
@@ -430,7 +432,7 @@ const AdsAdd = () => {
                       handleDateChange("startDateTime", e.target.value)
                     }
                     className="w-full border border-gray-300 rounded p-2"
-                    min={getMinDateTime()}
+                    min={new Date().toISOString().slice(0, 16)}
                     disabled={isSubmitting}
                   />
                   {errors.startDateTime && (
@@ -452,7 +454,7 @@ const AdsAdd = () => {
                       handleDateChange("endDateTime", e.target.value)
                     }
                     className="w-full border border-gray-300 rounded p-2"
-                    min={getMinEndDateTime()}
+                    min={formData.startTime || new Date().toISOString().slice(0, 16)}
                     disabled={isSubmitting}
                   />
                   {errors.endDateTime && (

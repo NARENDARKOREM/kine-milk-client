@@ -309,6 +309,7 @@ const CouponAdd = () => {
 
   const onSubmit = async (data) => {
   setIsSubmitting(true);
+  NotificationManager.removeAll()
   try {
     if (!id && !formData.coupon_img) {
       setError("coupon_img", {
@@ -361,6 +362,7 @@ const CouponAdd = () => {
     }
     console.log(formData.start_date," form data");
     console.log(formData.end_date," form data");
+    console.log(formData,"form")
     await api.post("/coupon/upsert", form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
