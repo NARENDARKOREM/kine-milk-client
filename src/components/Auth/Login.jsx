@@ -210,14 +210,14 @@ const Login = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <div className="flex items-center"></div>
               <div>
                 <a href="/forgotpassword" className="text-sm text-[#131313] fg">
                   Forgot password?
                 </a>
               </div>
-            </div>
+            </div> */}
 
             <div>
               <button

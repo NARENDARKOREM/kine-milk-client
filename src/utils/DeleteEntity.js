@@ -69,10 +69,12 @@ export const DeleteEntity = async (entity, id) => {
       });
 
       console.log("Server response:", response.data);
+      NotificationManager.removeAll();
       NotificationManager.success(`${entity} deleted successfully!`);
       return true; // Return true for successful deletion
     } else {
       console.log(`Deletion of ${entity} ${id} cancelled`);
+      NotificationManager.removeAll();
       NotificationManager.info(`${entity} deletion was cancelled.`);
       return false; // Return false for cancellation
     }
