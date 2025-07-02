@@ -124,6 +124,7 @@ const AdsAdd = () => {
     // Real-time validation for date fields
     const now = new Date().toISOString().slice(0, 16);
     if (field === "startDateTime" && value && value < now) {
+      NotificationManager.removeAll();
       setError("startDateTime", {
         type: "manual",
         message: "Start date/time cannot be in the past",
@@ -134,11 +135,13 @@ const AdsAdd = () => {
 
     if (field === "endDateTime" && value) {
       if (value < now) {
+        NotificationManager.removeAll();
         setError("endDateTime", {
           type: "manual",
           message: "End date/time cannot be in the past",
         });
       } else if (formData.startDateTime && value <= formData.startDateTime) {
+        NotificationManager.removeAll();
         setError("endDateTime", {
           type: "manual",
           message: "End date/time must be after start date/time",
@@ -179,6 +182,7 @@ const AdsAdd = () => {
 
       const now = new Date().toISOString();
       if (formData.startDateTime && formData.startDateTime < now) {
+        NotificationManager.removeAll();
         NotificationManager.error("Start date/time cannot be in the past.", "Error");
         setIsSubmitting(false);
         return;

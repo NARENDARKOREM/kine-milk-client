@@ -222,7 +222,7 @@ const BannerAdd = () => {
         id ? "Banner updated successfully." : "Banner added successfully.",
         "Success"
       );
-      // setTimeout(() => navigate("/admin/banner-list"), 2000);
+      setTimeout(() => navigate("/admin/banner-list"), 2000);
     } catch (error) {
       const errorMsg =
         error.response?.data?.ResponseMsg ||
