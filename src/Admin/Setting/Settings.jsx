@@ -503,6 +503,7 @@ const Settings = () => {
                 </div>
 
                 {/* Delivery Charges */}
+                {/* Delivery Charges */}
                 <div className="grid gap-4 w-full sm:grid-cols-1 md:grid-cols-3 mt-6">
                   <div className="flex flex-col">
                     <label
@@ -515,13 +516,21 @@ const Settings = () => {
                       id="delivery_charges"
                       name="delivery_charges"
                       type="number"
-                      {...register("delivery_charges", { required: true })}
+                      {...register("delivery_charges", {
+                        required: "Delivery charges are required",
+                        min: { value: 0, message: "Delivery charges cannot be negative" },
+                      })}
                       className="border rounded-lg p-3 mt-1 w-full h-14"
                       style={{
                         borderRadius: "8px",
                         border: "1px solid #EAEAFF",
                       }}
                     />
+                    {errors.delivery_charges && (
+                      <p className="text-red-500 text-sm text-start">
+                        {errors.delivery_charges.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Store Charges */}
@@ -536,13 +545,21 @@ const Settings = () => {
                       id="store_charges"
                       name="store_charges"
                       type="number"
-                      {...register("store_charges", { required: true })}
+                      {...register("store_charges", {
+                        required: "Store charges are required",
+                        min: { value: 0, message: "Store charges cannot be negative" },
+                      })}
                       className="border rounded-lg p-3 mt-1 w-full h-14"
                       style={{
                         borderRadius: "8px",
                         border: "1px solid #EAEAFF",
                       }}
                     />
+                    {errors.store_charges && (
+                      <p className="text-red-500 text-sm text-start">
+                        {errors.store_charges.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Tax */}
@@ -557,13 +574,21 @@ const Settings = () => {
                       id="tax"
                       name="tax"
                       type="number"
-                      {...register("tax", { required: true })}
+                      {...register("tax", {
+                        required: "Tax is required",
+                        min: { value: 0, message: "Tax cannot be negative" },
+                      })}
                       className="border rounded-lg p-3 mt-1 w-full h-14"
                       style={{
                         borderRadius: "8px",
                         border: "1px solid #EAEAFF",
                       }}
                     />
+                    {errors.tax && (
+                      <p className="text-red-500 text-sm text-start">
+                        {errors.tax.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 

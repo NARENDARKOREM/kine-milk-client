@@ -143,10 +143,11 @@ const CouponList = () => {
         setCoupon(updatedCoupons);
         setFilteredCoupon(updatedCoupons);
         setTotalPages(Math.ceil(updatedCoupons.length / itemsPerPage));
-        NotificationManager.removeAll();
       } else {
         throw new Error("Failed to delete");
       }
+      NotificationManager.removeAll();
+      NotificationManager.success('Coupon deleted successfully', 'Success');
     } catch (error) {
       console.error("Error deleting coupon:", error);
       NotificationManager.removeAll();
