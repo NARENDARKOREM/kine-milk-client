@@ -225,9 +225,9 @@ const AdminSidebar = () => {
         {/* Logo Section */}
         <div className="logo-section">
           <img
-            src="/kinemilklogo.svg"
+            src="/kartly.png"
             alt="Logo"
-            className="logo-image"
+            className=" h-[150px] w-[150px] mt-5"
             onClick={() => navigate("/admin/dashboard")}
           />
           {isSidebarOpen && (
