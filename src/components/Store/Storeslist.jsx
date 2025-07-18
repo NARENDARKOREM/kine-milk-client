@@ -115,6 +115,7 @@ const StoresList = () => {
         setStores(updatedStores);
         setFilteredStores(updatedStores);
         setTotalPages(Math.ceil(updatedStores.length / itemsPerPage));
+        NotificationManager.removeAll();
         NotificationManager.success("Store deleted successfully", "Success", 3000);
       } else {
         throw new Error("Failed to delete");

@@ -13,7 +13,8 @@ import { handleSort } from "../utils/sorting";
 import { StatusEntity } from "../utils/StatusEntity";
 import { DeleteEntity } from "../utils/DeleteEntity";
 import { ReactComponent as Edit } from "../assets/images/Edit.svg";
-import { ReactComponent as Delete } from "../assets/images/Delete.svg";
+import { ReactComponent as DeleteIcon } from "../assets/images/Delete.svg"; // ✅ renamed
+
 
 const ProductList = () => {
   const navigate = useNavigate();

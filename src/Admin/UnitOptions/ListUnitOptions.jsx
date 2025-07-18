@@ -28,8 +28,9 @@ const ListUnitOptions = () => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchUnits();
-  }, []);
+  fetchUnits();
+}, []); // ✅ only run once when component mounts
+
 
   const fetchUnits = async () => {
     setIsLoading(true);
@@ -51,37 +52,49 @@ const ListUnitOptions = () => {
   };
 
   const handleSearch = (event) => {
-  const querySearch = event.target.value.toLowerCase();
-  const filteredData = units.filter((item) =>
-    (item.name?.toLowerCase().includes(querySearch) ||
-     item.unit?.toLowerCase().includes(querySearch))
-  );
-  setFilteredUnits(filteredData);
-  setPage(1);
-  setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-};
-
+    const querySearch = event.target.value.toLowerCase();
+    const filteredData = units.filter((item) =>
+      (item.name?.toLowerCase().includes(querySearch) ||
+       item.unit?.toLowerCase().includes(querySearch))
+    );
+    setFilteredUnits(filteredData);
+    setPage(1);
+    setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
+  };
 
   const sortData = (key) => {
     handleSort(filteredUnits, key, sortConfig, setSortConfig, setFilteredUnits);
   };
 
-const handleDelete = async (id) => {
+ const handleDelete = async (id) => {
   try {
     const result = await DeleteEntity('Unit', id);
-    if (result.success) {
+
+    if (result === true) {
       const updatedUnits = units.filter((u) => u.id !== id);
+      const updatedFiltered = filteredUnits.filter((u) => u.id !== id);
+
       setUnits(updatedUnits);
-      setFilteredUnits(updatedUnits);
-      setTotalPages(Math.ceil(updatedUnits.length / itemsPerPage));
+      setFilteredUnits(updatedFiltered);
+
+      const newTotalPages = Math.ceil(updatedFiltered.length / itemsPerPage);
+      setTotalPages(newTotalPages);
+
+      if ((page > 1) && ((page - 1) * itemsPerPage >= updatedFiltered.length)) {
+        setPage(page - 1);
+      }
+
+      // NotificationManager.success('Unit deleted successfully', 'Success');
     } else {
       console.log(`Deletion of Unit ${id} was cancelled or failed`);
     }
   } catch (error) {
     console.error('Deletion error:', error);
-    // Error notification is already handled in DeleteEntity
+    NotificationManager.error('Failed to delete unit', 'Error');
   }
 };
+
+
 
   const handleEdit = (id) => {
     const unit = units.find((u) => u.id === id);
@@ -129,6 +142,7 @@ const handleDelete = async (id) => {
         <Header />
         <InnerHeader name="Weight/Volume List" onSearch={handleSearch} />
         <ProductInventoryTable
+        key={filteredUnits.length}
           columns={columns}
           data={tableData}
           page={page}

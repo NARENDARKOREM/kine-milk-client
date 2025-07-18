@@ -229,7 +229,7 @@ useEffect(() => {
       const response = await api.post("/product-images/imgupsert", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+      NotificationManager.removeAll();
       NotificationManager.success(
         image_id ? "Product image updated successfully" : "Product image added successfully",
         "Success",
